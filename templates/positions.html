@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='table.css')}}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
+    <script src="{{ url_for('static', filename='bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='socket.js') }}"></script>
+    <title>Document</title>
+</head>
+<body>
+    <div class="buttonss" style="padding-top: 10px">
+        <a href="../admin"><button type="button" class="btn btn-success">Back</button></a>
+    </div>
+    <center>
+        <a href="positions/create"><button type="button" class="btn btn-success">Create Position</button></a>
+        <h3>Positions :</h3>
+    </center>
+    
+    <div class="container">
+        
+  <table class="responsive-table">
+    
+    <thead>
+      <tr>
+        <th scope="col">Position Name</th>
+        <th scope="col">Id</th>
+        <th scope="col">WCS</th>
+        <th scope="col">Edit</th>
+        <th scope="col">Delete</th>
+      </tr>
+    </thead>
+    <tbody>
+        {% for item in tm %}
+      <tr>
+        <th scope="row">{{item[1]}}</th>
+        <td data-title="Id">{{item[0]}}</td>
+        <td data-title="WCS">{{item[2]}}</td>
+        <td data-title="Edit" data-type="currency"><a href="positions/edit/{{item[0]}}"><button type="button" class="btn btn-primary" >Edit</button></a></td>
+        <td data-title="Delete" data-type="currency"><a href="positions/delete/{{item[0]}}"><button type="button" class="btn btn-danger">Delete</button></a></td>
+      </tr>
+      {% endfor %}
+      
+    </tbody>
+  </table>
+  <p style="color: red;">Deleting Position Will Also Delete Candidates With The Position Assigned To</p>
+
+</div>
+    <!-- <button onclick="llol()">Hii</button> -->
+    <!-- <script>
+    var socket = io();
+    
+    function llol() { 
+        socket.emit('llol', {data: 'hello'});
+       };
+  </script> -->
+  <script src="{{ url_for('static', filename='popper.min.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
+    <script src="{{ url_for('static', filename='bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='socket.js') }}"></script>
+    <title>Document</title>
+</head>
+<body>
+    <div class="buttonss" style="padding-top: 10px">
+        <button type="button" class="btn btn-primary">Live Feed</button>
+        <a href="/admin/positions"><button type="button" class="btn btn-success">Positions</button></a>
+        <a href="/admin/candidates"><button type="button" class="btn btn-success">Candidates</button></a>
+        <button type="button" class="btn btn-success">Voters</button>
+        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#clear-data-modal">Clear Data</button>
+        <div class="modal fade" id="clear-data-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="staticBackdropLabel">Modal title</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  ...
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                  <button type="button" class="btn btn-primary">Understood</button>
+                </div>
+              </div>
+            </div>
+          </div>
+    </div>
+    
+    <!-- <button onclick="llol()">Hii</button> -->
+    <!-- <script>
+    var socket = io();
+    
+    function llol() { 
+        socket.emit('llol', {data: 'hello'});
+       };
+  </script> -->
+  <script src="{{ url_for('static', filename='popper.min.js') }}"></script>
+</body>
+</html>

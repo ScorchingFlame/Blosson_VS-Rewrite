@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
+    <script src="{{ url_for('static', filename='bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='socket.js') }}"></script>
+    <title>Document</title>
+</head>
+
+<body>
+    <div class="buttonss" style="padding-top: 10px">
+        <a href="{{bck_btn}}"><button type="button" class="btn btn-success">Back</button></a>
+    </div>
+    <center>
+        <div class="create" style="height: 60%; width: 50%">
+
+            <form id="form" method="post" onkeydown="return event.key != 'Enter';">
+                <p id="Error" style="color: #ff0000;"></p>
+                <div class="name" style="display: flex; /* 2. display flex to the rescue */
+                flex-direction: row;">
+                    <h5>Name:</h5> <input type="text" id="name" name="name" style="margin-left: 20px; margin-bottom: 10px;" placeholder="{{ ph }}" required> (avoid Whitespace on the front of the text)
+                </div>
+                <div class="wcs" style="display: flex; /* 2. display flex to the rescue */
+                flex-direction: row;">
+                <h5>Wcs :</h5>
+                <input type="hidden" name="wcs" value="" id = "hid-wcs" >
+                    <textarea name="wcs-box" disabled style="resize: none;" id="wcs-box" cols="30" rows="4" style="font-size: 44pt"></textarea>
+                    <select class="form-select" aria-label="Default select example" id="wcs-select" style="width: 40%;">
+                        <option id='        EVERYONE'>        EVERYONE</option>
+<option id='        3rd STD'>        3rd STD</option>
+<option id='        4th STD'>        4th STD</option>
+<option id='        5th STD'>        5th STD</option>
+<option id='        6th STD'>        6th STD</option>
+<option id='        7th STD'>        7th STD</option>
+<option id='        8th STD'>        8th STD</option>
+<option id='        9th STD'>        9th STD</option>
+<option id='        10th STD'>        10th STD</option>
+<option id='        11th STD'>        11th STD</option>
+<option id='        12th STD'>        12th STD</option>
+<option id='        WINTER'>        WINTER</option>
+<option id='        SUMMER'>        SUMMER</option>
+<option id='        SPRING'>        SPRING</option>
+<option id='        WINTER (3rd STD)'>        WINTER (3rd STD)</option>
+<option id='        WINTER (4th STD)'>        WINTER (4th STD)</option>
+<option id='        WINTER (5th STD)'>        WINTER (5th STD)</option>
+<option id='        WINTER (6th STD)'>        WINTER (6th STD)</option>
+<option id='        WINTER (7th STD)'>        WINTER (7th STD)</option>
+<option id='        WINTER (8th STD)'>        WINTER (8th STD)</option>
+<option id='        WINTER (9th STD)'>        WINTER (9th STD)</option>
+<option id='        WINTER (10th STD)'>        WINTER (10th STD)</option>
+<option id='        WINTER (11th STD)'>        WINTER (11th STD)</option>
+<option id='        WINTER (12th STD)'>        WINTER (12th STD)</option>
+<option id='        SUMMER (3rd STD)'>        SUMMER (3rd STD)</option>
+<option id='        SUMMER (4th STD)'>        SUMMER (4th STD)</option>
+<option id='        SUMMER (5th STD)'>        SUMMER (5th STD)</option>
+<option id='        SUMMER (6th STD)'>        SUMMER (6th STD)</option>
+<option id='        SUMMER (7th STD)'>        SUMMER (7th STD)</option>
+<option id='        SUMMER (8th STD)'>        SUMMER (8th STD)</option>
+<option id='        SUMMER (9th STD)'>        SUMMER (9th STD)</option>
+<option id='        SUMMER (10th STD)'>        SUMMER (10th STD)</option>
+<option id='        SUMMER (11th STD)'>        SUMMER (11th STD)</option>
+<option id='        SUMMER (12th STD)'>        SUMMER (12th STD)</option>
+<option id='        SPRING (3rd STD)'>        SPRING (3rd STD)</option>
+<option id='        SPRING (4th STD)'>        SPRING (4th STD)</option>
+<option id='        SPRING (5th STD)'>        SPRING (5th STD)</option>
+<option id='        SPRING (6th STD)'>        SPRING (6th STD)</option>
+<option id='        SPRING (7th STD)'>        SPRING (7th STD)</option>
+<option id='        SPRING (8th STD)'>        SPRING (8th STD)</option>
+<option id='        SPRING (9th STD)'>        SPRING (9th STD)</option>
+<option id='        SPRING (10th STD)'>        SPRING (10th STD)</option>
+<option id='        SPRING (11th STD)'>        SPRING (11th STD)</option>
+<option id='        SPRING (12th STD)'>        SPRING (12th STD)</option>
+                    </select>
+                    <button type="button" id="add-btn" class="btn btn-primary" onclick="add_btn()">Add</button>
+                </div>
+                <input type="submit" id="submit-button" style="display:none;">
+                <button id="submitss" type="button" onclick="subbmit()" class="btn btn-primary">{{ mode_name }}</button>
+            </form>
+
+        </div>
+        WCS - Who Can See 
+    </center>
+
+
+    <script>
+        var switcher = JSON.parse('{ "EVERYONE": "00", "3rd STD": "01", "4th STD": "02", "5th STD": "03", "6th STD": "04", "7th STD": "05", "8th STD": "06", "9th STD": "07", "10th STD": "08", "11th STD": "09", "12th STD": "10", "WINTER": "11", "SUMMER": "12", "SPRING": "13", "WINTER (3rd STD)": "14", "WINTER (4th STD)": "15", "WINTER (5th STD)": "16", "WINTER (6th STD)": "17", "WINTER (7th STD)": "18", "WINTER (8th STD)": "19", "WINTER (9th STD)": "20", "WINTER (10th STD)": "21", "WINTER (11th STD)": "22", "WINTER (12th STD)": "23", "SUMMER (3rd STD)": "24", "SUMMER (4th STD)": "25", "SUMMER (5th STD)": "26", "SUMMER (6th STD)": "27", "SUMMER (7th STD)": "28", "SUMMER (8th STD)": "29", "SUMMER (9th STD)": "30", "SUMMER (10th STD)": "31", "SUMMER (11th STD)": "32", "SUMMER (12th STD)": "33", "SPRING (3rd STD)": "34", "SPRING (4th STD)": "35", "SPRING (5th STD)": "36", "SPRING (6th STD)": "37", "SPRING (7th STD)": "38", "SPRING (8th STD)": "39", "SPRING (9th STD)": "40", "SPRING (10th STD)": "41", "SPRING (11th STD)": "42", "SPRING (12th STD)": "43" }')
+        var olol = [];
+        var value = document.getElementById("wcs-select");
+        console.log(olol);
+        var pp = document.getElementById("Error");
+        function add_btn() {
+            pp.innerHTML = "";
+            
+            if (olol.includes(value.value)) {
+                console.log("YES");
+                
+                pp.innerHTML = value.value + " Is Already In the WCS list";
+                return;
+            }
+            olol.push(value.value);
+            console.log(olol);
+            var hid = document.getElementById("hid-wcs");
+            var dawg = "";
+            for (let index = 0; index < olol.length; index++) {
+                const element = olol[index];
+                dawg = dawg + element + "\n";
+                
+                
+            }
+            hid.value = hid.value + switcher[value.value];
+            console.log(hid.value)
+            var wcs = document.getElementById("wcs-box");
+            document.getElementById("wcs-box").scrollTop = document.getElementById("wcs-box").scrollHeight 
+            wcs.value = dawg;
+            console.log(dawg);
+        };
+
+        function subbmit() {
+            if (olol.length > 0 && value.value != null && value.value.trim() !== '') {
+                var subb = document.getElementById("form");
+                    document.getElementById('submit-button').click();
+                 return;
+                
+            };
+            pp.innerHTML = "Error: WCS Box Is Empty"
+            console.log("dDuh");
+        };
+
+    </script>
+    <script src="{{ url_for('static', filename='popper.min.js') }}"></script>
+</body>
+
+</html>
