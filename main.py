@@ -1,7 +1,8 @@
 from flask_compress import Compress
 from flask_socketio import SocketIO
-import flask, sqlite3, socket, asyncio, random, os, re, pandas as pd, tempfile, base64, re
-from flask import abort, redirect, request, url_for
+from flask_session import Session
+import flask, sqlite3, socket, asyncio, random, os, re, pandas as pd, tempfile, base64, re, json
+from flask import abort, redirect, request, session, url_for
 from flask import Flask, render_template
 
 
@@ -12,6 +13,10 @@ def get_ip_address():
 
 def change_date_format(dt):
         return re.sub(r'(\d{4})-(\d{1,2})-(\d{1,2})', '\\3-\\2-\\1', dt)
+
+with open('config.json', 'r') as cfg:
+    CFG = json.loads(cfg.read())
+
 
 try:
     print(get_ip_address())
@@ -43,7 +48,10 @@ conn.execute("""CREATE TABLE IF NOT EXISTS voters (
                 House TEXT NOT NULL,
                 Voted INTEGER NOT NULL
                 );""")
-                
+
+app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_TYPE"] = "filesystem"
+Session(app)
 
 def decode_base64(data, altchars=b'+/'):
     """Decode base64, padding being optional.
@@ -60,14 +68,20 @@ def decode_base64(data, altchars=b'+/'):
 
 @app.route('/admin')
 def index():
+    if not session.get("login"):
+        return redirect("/admin/login")
     return render_template('index.html')
 
 @app.route('/admin/positions')
 def positions():
+    if not session.get("login"):
+        return redirect("/admin/login")
     return render_template('positions.html', tm=conn.cursor().execute('SELECT * from positions').fetchall())
 
 @app.route('/admin/positions/create', methods=['GET', 'POST'])
 def create():
+    if not session.get("login"):
+        return redirect("/admin/login")
     if request.method == 'GET':
         return render_template('create-position.html', ph="", mode_name="Submit", bck_btn="../positions")
     if request.method == 'POST':
@@ -79,6 +93,8 @@ def create():
 
 @app.route('/admin/positions/edit/<id>', methods=['GET','POST'])
 def edit_positions(id: int):
+    if not session.get("login"):
+        return redirect("/admin/login")
     cursor = conn.cursor()
     cursor.execute(f"SELECT * from positions where id={str(id)}")
     record = cursor.fetchone()
@@ -121,7 +137,7 @@ def delete_positions(id):
         al = tuple(pl)
         new_r_c.append(al)
     sql_statement = 'INSERT INTO positions VALUES (?, ?, ?)'
-    sql_statement_c = 'INSERT INTO candidates VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+    sql_statement_c = 'INSERT INTO candidates VALUES (?, ?, ?, ?, ?, ?, ?)'
     cur = conn.cursor()
     cur.execute("DELETE FROM positions")
     cur.execute("DELETE FROM candidates")
@@ -136,6 +152,8 @@ def lmfo(data):
 
 @app.route('/admin/candidates')
 def candidates():
+    if not session.get("login"):
+        return redirect("/admin/login")
     cursor = conn.cursor()
     cursor.execute(f"SELECT * from candidates")
     record = cursor.fetchall()
@@ -157,6 +175,8 @@ def candidates():
 
 @app.route('/admin/candidates/create', methods=['GET', 'POST'])
 def createc():
+    if not session.get("login"):
+        return redirect("/admin/login")
     if request.method == 'GET':
         return render_template('create-candidates.html', ph="", phs=0, mode_name="Create", bck_btn="../candidates", poses=conn.execute('SELECT * from positions').fetchall())
     if request.method == 'POST':
@@ -175,6 +195,8 @@ def createc():
 
 @app.route('/admin/candidates/delete/<id>')
 def delete_candidate(id):
+    if not session.get("login"):
+        return redirect("/admin/login")
     cursor = conn.cursor()
     cursor.execute(f"SELECT * from candidates where id={str(id)}")
     record = cursor.fetchone()
@@ -200,6 +222,8 @@ def delete_candidate(id):
 
 @app.route('/admin/candidates/edit/<id>', methods=['GET','POST'])
 def edit_candidates(id: int):
+    if not session.get("login"):
+        return redirect("/admin/login")
     cursor = conn.cursor()
     cursor.execute(f"SELECT * from candidates where id={str(id)}")
     record = cursor.fetchone()
@@ -230,6 +254,8 @@ def edit_candidates(id: int):
 
 @app.route('/admin/voters')
 def voters():
+    if not session.get("login"):
+        return redirect("/admin/login")
     return render_template('voters.html', rec=conn.cursor().execute('SELECT * from voters').fetchall())
 
 class devnull:
@@ -237,6 +263,8 @@ class devnull:
 
 @app.route('/admin/voters/create', methods=['GET', 'POST'])
 def vcreate():
+    if not session.get("login"):
+        return redirect("/admin/login")
     if request.method == 'GET':
         return render_template('create-voters-manual.html')
     if request.method == 'POST':
@@ -252,6 +280,8 @@ def vcreate():
 
 @app.route('/admin/voters/delete/<ad>')
 def delv(ad ):
+    if not session.get("login"):
+        return redirect("/admin/login")
     cursor = conn.cursor()
     cursor.execute(f"SELECT * from voters where adnumber={str(ad)}")
     record = cursor.fetchone()
@@ -268,26 +298,41 @@ def delv(ad ):
 
 @app.route('/admin/voters/excel')
 def vexcel():
+    if not session.get("login"):
+        return redirect("/admin/login")
     return render_template('create-voters-excel.html')
 
 @app.route('/upload/vexcel', methods=['POST'])
 def uexcel():
     file = request.files['file'].read()
     try:
-        with tempfile.NamedTemporaryFile(suffix='.xlsx') as tf:
-            tf.write(file)
+        tf = tempfile.NamedTemporaryFile(suffix='.xlsx')
+        tf.write(file)
             # print(tf.name)
-            df = pd.read_excel(tf.name, engine='openpyxl')
-            df['Voted'] = 0
-            df.to_sql('voters', con=conn, if_exists='append', index=False)
-            tf.close()
+        df = pd.read_excel(tf.name, engine='openpyxl')
+        df['Voted'] = 0
+        df.to_sql('voters', con=conn, if_exists='append', index=False)
+        tf.close()
         socketio.emit('sleep', {'done': 'ok'})
         return "Ok"
     except:
+        tf.close()
         socketio.emit('sleeep', {'done': 'ok'})
         return abort(500)
 
-socketio.run(app, port=8080)
+@app.route('/admin/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        name = request.form.get('username')
+        passwd = request.form.get('password')
+        if CFG['admin']['USERNAME'] == name and CFG['admin']['PASSWORD'] == passwd:
+            session["login"] = "Yea"
+            return redirect('/admin')
+        else:
+            return render_template('login.html', error="Error: Login Credentials Are Wrong!")
+    return render_template('login.html')
+
+socketio.run(app, host=CFG['HOST'], port=CFG['PORT'])
 # http_server = WSGIServer(('0.0.0.0', 8080), app, handler_class=WebSocketServer) 
 # asyncio.get_event_loop().run_in_executor(None, http_server.serve_forever)
 # http_server.serve_forever()

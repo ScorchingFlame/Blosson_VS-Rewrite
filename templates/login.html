@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
+    <script src="{{ url_for('static', filename='bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='socket.js') }}"></script>
+    <title>Document</title>
+</head>
+
+<body>
+    <center>
+        <div class="create" style="height: 60%; width: 50%">
+
+            <form id="form" method="post" enctype="multipart/form-data">
+                <p id="Error" style="color: #ff0000;">{{error}}</p>
+                <div class="name" style="display: flex; /* 2. display flex to the rescue */
+                flex-direction: row;">
+                    <h5>Username:</h5> <input type="text" id="username" name="username" style="margin-left: 20px; margin-bottom: 10px;"  required> 
+                </div>
+                <div class="name" style="display: flex; /* 2. display flex to the rescue */
+                flex-direction: row;">
+                    <h5>Password:</h5> <input type="password" name="password" id="password" style="margin-left: 20px; margin-bottom: 10px;" required >
+                </div>
+                
+                <input type="submit" id="submit-button" class="btn btn-primary" value="Login">
+            </form>
+
+        </div>
+    </center>
+
+
+    <script>
+        $('form input').on('keypress', function(e) {
+    return e.which !== 13;
+});
+    </script>
+    <script src="{{ url_for('static', filename='popper.min.js') }}"></script>
+</body>
+
+</html>

@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
     <script src="{{ url_for('static', filename='bootstrap.bundle.min.js') }}"></script>
     <script src="{{ url_for('static', filename='socket.js') }}"></script>
+    <script src="{{ url_for('static', filename='jquery.min.js') }}"></script>
     <title>Document</title>
 </head>
 
@@ -18,7 +19,7 @@
     <center>
         <div class="create" style="height: 60%; width: 50%">
 
-            <form id="form" method="post" onkeydown="return event.key != 'Enter';">
+            <form id="form" method="post" >
                 <p id="Error" style="color: #ff0000;"></p>
                 <div class="name" style="display: flex; /* 2. display flex to the rescue */
                 flex-direction: row;">
@@ -87,6 +88,9 @@
 
 
     <script>
+        $('form input').on('keypress', function(e) {
+            return e.which !== 13;
+});
         var switcher = JSON.parse('{ "EVERYONE": "00", "3rd STD": "01", "4th STD": "02", "5th STD": "03", "6th STD": "04", "7th STD": "05", "8th STD": "06", "9th STD": "07", "10th STD": "08", "11th STD": "09", "12th STD": "10", "WINTER": "11", "SUMMER": "12", "SPRING": "13", "WINTER (3rd STD)": "14", "WINTER (4th STD)": "15", "WINTER (5th STD)": "16", "WINTER (6th STD)": "17", "WINTER (7th STD)": "18", "WINTER (8th STD)": "19", "WINTER (9th STD)": "20", "WINTER (10th STD)": "21", "WINTER (11th STD)": "22", "WINTER (12th STD)": "23", "SUMMER (3rd STD)": "24", "SUMMER (4th STD)": "25", "SUMMER (5th STD)": "26", "SUMMER (6th STD)": "27", "SUMMER (7th STD)": "28", "SUMMER (8th STD)": "29", "SUMMER (9th STD)": "30", "SUMMER (10th STD)": "31", "SUMMER (11th STD)": "32", "SUMMER (12th STD)": "33", "SPRING (3rd STD)": "34", "SPRING (4th STD)": "35", "SPRING (5th STD)": "36", "SPRING (6th STD)": "37", "SPRING (7th STD)": "38", "SPRING (8th STD)": "39", "SPRING (9th STD)": "40", "SPRING (10th STD)": "41", "SPRING (11th STD)": "42", "SPRING (12th STD)": "43" }')
         var olol = [];
         var value = document.getElementById("wcs-select");
