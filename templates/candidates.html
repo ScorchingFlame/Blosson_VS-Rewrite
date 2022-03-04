@@ -28,7 +28,6 @@
         <th scope="col">Candidate Name</th>
         <th scope="col">Id</th>
         <th scope="col">STD</th>
-        <th scope="col">DOB</th>
         <th scope="col">House</th>
         <th scope="col">Photo</th>
         <th scope="col">Position</th>
@@ -43,11 +42,10 @@
         <th scope="row">{{item[1]}}</th>
         <td data-title="Id">{{item[0]}}</td>
         <td data-title="STD">{{item[2]}}</td>
-        <td data-title="DOB" data-type="currency">{{item[3]}}</td>
-        <td data-title="House" data-type="currency">{{item[4]}}</td>
-        <td><img src="{{ url_for('static', filename='pics/' + item[5] )}}" alt="{{item[5]}}" height="100px"></td>
+        <td data-title="House" data-type="currency">{{item[3]}}</td>
+        <td><img src="{{ url_for('static', filename='pics/' + item[4] )}}" alt="{{item[4]}}" height="100px"></td>
+        <td>{{item[5]}}</td>
         <td>{{item[6]}}</td>
-        <td>{{item[7]}}</td>
         <td data-title="Edit" data-type="currency"><a href="candidates/edit/{{item[0]}}"><button type="button" class="btn btn-primary" >Edit</button></a></td>
         <td data-title="Delete" data-type="currency"><a href="candidates/delete/{{item[0]}}"><button type="button" class="btn btn-danger">Delete</button></a></td>
       </tr>

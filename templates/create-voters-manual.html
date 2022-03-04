@@ -13,7 +13,7 @@
 
 <body>
     <div class="buttonss" style="padding-top: 10px">
-        <a href="{{bck_btn}}"><button type="button" class="btn btn-success">Back</button></a>
+        <a href="../voters"><button type="button" class="btn btn-success">Back</button></a>
     </div>
     <center>
         <div class="create" style="height: 60%; width: 50%">
@@ -22,11 +22,15 @@
                 <p id="Error" style="color: #ff0000;"></p>
                 <div class="name" style="display: flex; /* 2. display flex to the rescue */
                 flex-direction: row;">
-                    <h5>Name:</h5> <input type="text" id="name" name="name" style="margin-left: 20px; margin-bottom: 10px;" placeholder="{{ ph }}" required> (avoid Whitespace on the front of the text)
+                    <h5>Addmisson Number:</h5> <input type="number" id="ad" name="ad" style="margin-left: 20px; margin-bottom: 10px;"  required> 
                 </div>
                 <div class="name" style="display: flex; /* 2. display flex to the rescue */
                 flex-direction: row;">
-                    <h5>STD:</h5> <input type="number" name="std" id="std" style="margin-left: 20px; margin-bottom: 10px;" required placeholder="{{ phs }}">
+                    <h5>Name:</h5> <input type="text" name="name" id="name" style="margin-left: 20px; margin-bottom: 10px;" required >(avoid Whitespace on the front of the text)
+                </div>
+                <div class="name" style="display: flex; /* 2. display flex to the rescue */
+                flex-direction: row;">
+                    <h5>Grade:</h5> <input type="number" id="std" name="std" style="margin-left: 20px; margin-bottom: 10px;"  required>
                 </div>
                 <div class="name" style="display: flex; /* 2. display flex to the rescue */
                 flex-direction: row;">
@@ -38,21 +42,12 @@
                 </div>
                 <div class="name" style="display: flex; /* 2. display flex to the rescue */
                 flex-direction: row;">
-                    <h5>Photo:</h5> <input type="file" name="photo" id="photo" accept="image/*" required style="margin-left: 20px; margin-bottom: 10px;">
-                </div>
-                <div class="name" style="display: flex; /* 2. display flex to the rescue */
-                flex-direction: row;">
-                    <h5>Position:</h5> <select name="pos" id="pos" style="margin-left: 20px; margin-bottom: 10px;" required>
-                        {% for pos in poses %}
-                        <option value="{{pos[0]}}">{{pos[1]}}</option>
-                        {% endfor %}
+                    <h5>Voted:</h5> <select name="voted" id="voted" style="margin-left: 20px; margin-bottom: 10px;" required>
+                        <option value="0" selected >NO</option>
+                        <option value="1">YES</option>
                     </select>
                 </div>
-                <div class="name" style="display: flex; /* 2. display flex to the rescue */
-                flex-direction: row;">
-                    <h5>Starting Votes:</h5> <input type="number" name="votes" id="votes" style="margin-left: 20px; margin-bottom: 10px;" placeholder="{{ phv }}" required>
-                </div>
-                <input type="submit" id="submit-button" class="btn btn-primary" value="{{ mode_name }}">
+                <input type="submit" id="submit-button" class="btn btn-primary" value="Create">
             </form>
 
         </div>
