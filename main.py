@@ -332,6 +332,48 @@ def login():
             return render_template('login.html', error="Error: Login Credentials Are Wrong!")
     return render_template('login.html')
 
+@app.route('/admin/cleardata/positions')
+def cdpos():
+    if not session.get("login"):
+        return redirect("/admin/login")
+    conn.cursor().execute("DELETE from positions;").execute("DELETE from candidates")
+    dir = './static/pics'
+    for f in os.listdir(dir):
+        os.remove(os.path.join(dir, f))
+    conn.commit()
+    return redirect('/admin')
+
+@app.route('/admin/cleardata/candidates')
+def cdcad():
+    if not session.get("login"):
+        return redirect("/admin/login")
+    conn.cursor().execute("DELETE from candidates")
+    dir = './static/pics'
+    for f in os.listdir(dir):
+        os.remove(os.path.join(dir, f))
+    conn.commit()
+    return redirect('/admin')
+
+@app.route('/admin/cleardata/voters')
+def cdvot():
+    if not session.get("login"):
+        return redirect("/admin/login")
+    conn.cursor().execute("DELETE from voters")
+    conn.commit()
+    return redirect('/admin')
+
+
+@app.route('/admin/cleardata/all')
+def cdall():
+    if not session.get("login"):
+        return redirect("/admin/login")
+    conn.cursor().execute("DELETE from voters;").execute(" Delete from candidates;").execute("delete from positions")
+    dir = './static/pics'
+    for f in os.listdir(dir):
+        os.remove(os.path.join(dir, f))
+    conn.commit()
+    return redirect('/admin')
+
 socketio.run(app, host=CFG['HOST'], port=CFG['PORT'])
 # http_server = WSGIServer(('0.0.0.0', 8080), app, handler_class=WebSocketServer) 
 # asyncio.get_event_loop().run_in_executor(None, http_server.serve_forever)

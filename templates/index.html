@@ -17,18 +17,21 @@
         <a href="/admin/voters"><button type="button" class="btn btn-success">Voters</button></a>
         <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#clear-data-modal">Clear Data</button>
         <div class="modal fade" id="clear-data-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-            <div class="modal-dialog">
-              <div class="modal-content">
+            <div class="modal-dialog" >
+              <div class="modal-content" style="width: 110%;">
                 <div class="modal-header">
-                  <h5 class="modal-title" id="staticBackdropLabel">Modal title</h5>
+                  <h5 class="modal-title" id="staticBackdropLabel">Clear Data</h5>
                   <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                  ...
+                  <p style="color: red;">Deleting Positions Also Deletes Candidates</p>
+                  <a href="/admin/cleardata/positions" class="btn btn-danger">Clear Positions</a>
+                  <a href="/admin/cleardata/candidates" class="btn btn-danger">Clear Candidates</a>
+                  <a href="/admin/cleardata/voters" class="btn btn-danger">Clear Voters</a>
+                  <a href="/admin/cleardata/all" class="btn btn-danger">Clear All</a>
                 </div>
                 <div class="modal-footer">
                   <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                  <button type="button" class="btn btn-primary">Understood</button>
                 </div>
               </div>
             </div>
