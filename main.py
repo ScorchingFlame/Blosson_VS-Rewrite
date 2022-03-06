@@ -374,6 +374,15 @@ def cdall():
     conn.commit()
     return redirect('/admin')
 
+@app.route('/')
+def voting():
+    return render_template('voting.html')
+
+@socketio.on('req-info')
+def rifo(data):
+    damn = conn.cursor().execute(f"select * from voters where adnumber={data['adnumber']} and house='{data['house']}'").fetchone()
+    socketio.emit('send-info', {'info': damn}, room=request.sid)
+
 socketio.run(app, host=CFG['HOST'], port=CFG['PORT'])
 # http_server = WSGIServer(('0.0.0.0', 8080), app, handler_class=WebSocketServer) 
 # asyncio.get_event_loop().run_in_executor(None, http_server.serve_forever)

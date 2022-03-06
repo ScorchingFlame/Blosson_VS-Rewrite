@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/inputs.css">
+    <link rel="stylesheet" href="/static/votingform.css">
+    <script src="/static/bootstrap.bundle.min.js"></script>
+    <script src="/static/jquery.min.js"></script>
+    <script src="/static/socket.js"></script>
+    <script src="/static/jquery.steps.js"></script>
+    <title>Document</title>
+</head>
+
+<body>
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+        }
+
+        /* Center the loader */
+        #loader {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            z-index: 1;
+            width: 120px;
+            height: 120px;
+            margin: -76px 0 0 -76px;
+            border: 16px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 16px solid #3498db;
+            -webkit-animation: spin 2s linear infinite;
+            animation: spin 2s linear infinite;
+        }
+
+        @-webkit-keyframes spin {
+            0% {
+                -webkit-transform: rotate(0deg);
+            }
+
+            100% {
+                -webkit-transform: rotate(360deg);
+            }
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Add animation to "page content" */
+        .animate-bottom {
+            position: relative;
+            -webkit-animation-name: animatebottom;
+            -webkit-animation-duration: 1s;
+            animation-name: animatebottom;
+            animation-duration: 1s
+        }
+
+        @-webkit-keyframes animatebottom {
+            from {
+                bottom: -100px;
+                opacity: 0
+            }
+
+            to {
+                bottom: 0px;
+                opacity: 1
+            }
+        }
+
+        @keyframes animatebottom {
+            from {
+                bottom: -100px;
+                opacity: 0
+            }
+
+            to {
+                bottom: 0;
+                opacity: 1
+            }
+        }
+
+        #myDiv {
+            height: 100%;
+            width: 100%;
+            background-color: #bb3030;
+        }
+
+        .textt {
+            padding-top: 2%;
+        }
+
+        .verify {
+            display: none;
+        }
+
+        .voting {
+            display: none;
+        }
+    </style>
+    <div id="loader" style="display: none;"></div>
+    <!-- Modal -->
+    <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+        aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="staticBackdropLabel">Press Ok Button</h5>
+                </div>
+                <div class="modal-body">
+                    Please click Ok Button To Continue Voting
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" onclick="toggleFullScreen()">Ok</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="myDiv">
+        <center>
+            <div class="login" id="login" style="display: none;">
+                <div class="textt">
+                    <h2>Login</h2>
+                    <hr>
+                </div>
+
+                <div class="loogin">
+                    <form id="login-form">
+                        <p style="color: green;" id="Error"></p>
+                        <label for="adnumber">Addmisson Number : </label>
+                        <input type="number" name="adnumber" id="adnumber" required style="width: 15%;"><br>
+                        <div class="house" style="padding-top: 1%">
+                            <label for="house">House :</label>
+                            <select name="house" id="house" required>
+                                <option value="WINTER">WINTER</option>
+                                <option value="SUMMER">SUMMER</option>
+                                <option value="SPRING">SPRING</option>
+                            </select>
+                            <br>
+                        </div>
+                        <button class="btn btn-success" style="margin-top: 1%;">Start Voting</button>
+                    </form>
+                </div>
+        </center>
+
+        <div class="verify" id="verify" style="display: none;">
+            <center>
+                <div class="top">
+                    <h3 style="padding-top: 2%;">
+                        Verify:
+                        <hr>
+                    </h3>
+                </div>
+                <div class="details">
+                    <p>Is It You?</p>
+                    <p id="verify-name">Name: </p>
+                    <p id="verify-adnumber">Addmisson Number: </p>
+                    <p id="verify-STD">STD: </p>
+                    <p id="verify-House">House: </p>
+                </div>
+                <div class="verify-buttons">
+                    <button class="btn btn-danger" id="verify-no">No</button> <button class="btn btn-success"
+                        style="margin-left: 2%;" id="verify-yes">Yes</button>
+                </div>
+            </center>
+        </div>
+        <div class="voting" style="display: block;">
+            <form id="regForm" method="get">
+
+                <h1>Vote!</h1><hr>
+
+                <!-- One "tab" for each step in the form: -->
+
+                <div class="tab">School Captain: 
+                    <p style="color: red;" id="Error" class="error"></p>
+                    <hr>
+                    <center>
+                        <div style="float: left;">
+                            <p style="font-size: medium; margin-bottom: 0%;">Name:</p>
+                    <p style="font-size: medium; margin-bottom: 0%;">STD:</p>
+                    <p style="font-size: medium; margin-bottom: 0%;">House:</p>
+                        </div>
+                        <img src="/static/pics/3BlB68.jpeg" alt="bruh" style="text-align: center;" height="150px"><input type="radio" name="GG" id="Nothin" required value="2">  
+                    </center>
+                    
+                    <hr>
+                    <center>
+                        <div style="float: left;">
+                            <p style="font-size: medium; margin-bottom: 0%;">Name:</p>
+                    <p style="font-size: medium; margin-bottom: 0%;">STD:</p>
+                    <p style="font-size: medium; margin-bottom: 0%;">House:</p>
+                        </div>
+                        <img src="/static/pics/3BlB68.jpeg" alt="bruh" style="text-align: center;" height="150px"><input type="radio" name="GG" id="Nothin" required value="2">  
+                    </center>
+                
+                </div>
+
+                <div class="tab">Blah:
+                    <p style="color: red;" id="Error" class="error"></p>
+                    <p><input type="radio" name="GG" id="Nothin" required value="2"></p>
+                    <p><input type="radio" name="GG" id="Nothin" required value="4"></p>
+                </div>
+
+                <div style="overflow:auto;">
+                    <div style="float:right;">
+                        <button type="button" id="prevBtn" onclick="nextPrev(-1)" class="btn btn-primary">Previous</button>
+                        <button type="button" id="nextBtn" onclick="nextPrev(1)" class="btn btn-primary">Next</button>
+                    </div>
+                </div>
+
+                <!-- Circles which indicates the steps of the form: -->
+                <div style="text-align:center;margin-top:40px;">
+                    <span class="step"></span>
+                    <span class="step"></span>
+                </div>
+
+            </form>
+        </div>
+    </div>
+    </div>
+    <script>
+        var socket = io();
+        var modal = new bootstrap.Modal(document.getElementById("staticBackdrop"));
+        var errors = document.getElementById('Error');
+
+        function keepload() {
+            document.getElementById("loader").style.display = "block";
+            document.getElementById("myDiv").style.display = "none";
+        }
+
+
+        function stopload() {
+            document.getElementById("loader").style.display = "none";
+            document.getElementById("myDiv").style.display = "block";
+        }
+        var modal_open = false;
+        var fullcheck = setInterval(function () {
+            if ((window.fullScreen) ||
+                (window.innerWidth == screen.width && window.innerHeight == screen.height)) {
+                // do something
+            } else {
+                if (!modal_open) {
+                    modal.show();
+                    modal_open = true;
+                }
+                if (modal_open) {
+                    modal_open = false;
+                }
+            }
+        }, 1000);
+
+        function toggleFullScreen() {
+            modal.hide();
+            if (!document.fullscreenElement &&    // alternative standard method
+                !document.mozFullScreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {  // current working methods
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen();
+                } else if (document.documentElement.msRequestFullscreen) {
+                    document.documentElement.msRequestFullscreen();
+                } else if (document.documentElement.mozRequestFullScreen) {
+                    document.documentElement.mozRequestFullScreen();
+                } else if (document.documentElement.webkitRequestFullscreen) {
+                    document.documentElement.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+                }
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                }
+            }
+        }
+
+        document.getElementById('login-form').onsubmit = function () {
+            socket.emit('req-info', { 'adnumber': $('#adnumber').val(), 'house': $('#house').val() });
+            keepload();
+            return false;
+        };
+
+        socket.on('send-info', function (data) {
+            stopload();
+            if (data.info == null) {
+                errors.innerHTML = 'ERROR: Please Enter Correct Crdentials'
+                return;
+            }
+            var login = document.getElementById('login');
+            var verify = document.getElementById('verify');
+            login.style.display = 'none';
+            verify.style.display = 'block';
+            var verify_name = document.getElementById('verify-name');
+            var verify_adnum = document.getElementById('verify-adnumber');
+            var verify_std = document.getElementById('verify-STD');
+            var verify_house = document.getElementById('verify-House');
+
+            verify_name.innerHTML = "Name: " + data.info[1];
+            verify_adnum.innerHTML = "Addmisson Number: " + data.info[0];
+            verify_std.innerHTML = "STD: " + data.info[2];
+            verify_house.innerHTML = "House: " + data.info[3];
+
+        });
+
+        $('#verify-no').on('click', function () {
+            var login = document.getElementById('login');
+            var verify = document.getElementById('verify');
+            login.style.display = 'block';
+            verify.style.display = 'none';
+            errors.innerHTML = "";
+            $('#adnumber').val("");
+        });
+
+        $('#verify-yes').on('click', function () {
+            var login = document.getElementById('login');
+            var verify = document.getElementById('verify');
+            login.style.display = 'none';
+            verify.style.display = 'none';
+            $('.voting').css('display', 'block')
+        });
+
+        var currentTab = 0; // Current tab is set to be the first tab (0)
+        showTab(currentTab); // Display the current tab
+
+        function showTab(n) {
+            // This function will display the specified tab of the form ...
+            var x = document.getElementsByClassName("tab");
+            x[n].style.display = "block";
+            // ... and fix the Previous/Next buttons:
+            if (n == 0) {
+                document.getElementById("prevBtn").style.display = "none";
+            } else {
+                document.getElementById("prevBtn").style.display = "inline";
+            }
+            if (n == (x.length - 1)) {
+                document.getElementById("nextBtn").innerHTML = "Submit";
+            } else {
+                document.getElementById("nextBtn").innerHTML = "Next";
+            }
+            // ... and run a function that displays the correct step indicator:
+            fixStepIndicator(n)
+        }
+
+        function nextPrev(n) {
+            // This function will figure out which tab to display
+            var x = document.getElementsByClassName("tab");
+            // Exit the function if any field in the current tab is invalid:
+            if (n == 1 && !validateForm()) return false;
+            // Hide the current tab:
+            x[currentTab].style.display = "none";
+            // Increase or decrease the current tab by 1:
+            currentTab = currentTab + n;
+            // if you have reached the end of the form... :
+            if (currentTab >= x.length) {
+                //...the form gets submitted:
+                document.getElementById("regForm").submit();
+                return false;
+            }
+            // Otherwise, display the correct tab:
+            showTab(currentTab);
+        }
+
+        function validateForm() {
+            // This function deals with validation of the form fields
+            var x, y, i, valid = true;
+            x = document.getElementsByClassName("tab");
+            y = x[currentTab].getElementsByTagName("input");
+            // A loop that checks every input field in the current tab:
+            for (i = 0; i < y.length; i++) {
+                // If a field is empty...
+                if (y[i].value == "") {
+                    // add an "invalid" class to the field:
+                    y[i].className += " invalid";
+                    // and set the current valid status to false:
+                    valid = false;
+                    
+                }
+
+                if (y[i].type == "radio") {
+                        if (x[currentTab].querySelector("input[name='"+ y[i].name + "']:checked") == null) {
+                            var a = x[currentTab].getElementsByClassName('error')[0];
+                            a.innerHTML = "Please Select A Candidate"
+                            valid = false;
+                        }
+                    }
+            }
+            // If the valid status is true, mark the step as finished and valid:
+            if (valid) {
+                document.getElementsByClassName("step")[currentTab].className += " finish";
+            }
+            return valid; // return the valid status
+        }
+
+        function fixStepIndicator(n) {
+            // This function removes the "active" class of all steps...
+            var i, x = document.getElementsByClassName("step");
+            for (i = 0; i < x.length; i++) {
+                x[i].className = x[i].className.replace(" active", "");
+            }
+            //... and adds the "active" class to the current step:
+            x[n].className += " active";
+        }
+    </script>
+    <script src="/static/popper.min.js"></script>
+</body>
+
+</html>
