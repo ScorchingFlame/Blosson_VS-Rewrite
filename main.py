@@ -1,7 +1,7 @@
 from flask_compress import Compress
 from flask_socketio import SocketIO
 from flask_session import Session
-import flask, sqlite3, socket, asyncio, random, os, re, pandas as pd, tempfile, base64, re, json
+import flask, sqlite3, socket, asyncio, random, os, re, pandas as pd, tempfile, base64, re, json, sqlalchemy
 from flask import abort, redirect, request, session, url_for
 from flask import Flask, render_template
 
@@ -306,16 +306,19 @@ def vexcel():
 def uexcel():
     file = request.files['file'].read()
     try:
-        tf = tempfile.NamedTemporaryFile(suffix='.xlsx')
+        tf = tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False)
         tf.write(file)
-            # print(tf.name)
+                # print(tf.name)
         df = pd.read_excel(tf.name, engine='openpyxl')
         df['Voted'] = 0
+        df['adnumber'] = df['adnumber'].astype(int)
+        # print (df.dtypes)
         df.to_sql('voters', con=conn, if_exists='append', index=False)
         tf.close()
         socketio.emit('sleep', {'done': 'ok'})
         return "Ok"
-    except:
+    except Exception as e:
+        print(e)
         tf.close()
         socketio.emit('sleeep', {'done': 'ok'})
         return abort(500)
@@ -383,7 +386,17 @@ def rifo(data):
     damn = conn.cursor().execute(f"select * from voters where adnumber={data['adnumber']} and house='{data['house']}'").fetchone()
     socketio.emit('send-info', {'info': damn}, room=request.sid)
 
-socketio.run(app, host=CFG['HOST'], port=CFG['PORT'])
+@socketio.on('connect')
+def on_connect():
+    rec_cad = conn.cursor().execute('SELECT * FROM candidates').fetchall()
+    rec_pos = conn.cursor().execute('SELECT * FROM positions').fetchall()
+    rec = {'cad': rec_cad,
+            'pos': rec_pos
+            }
+    socketio.emit('cad-with-pos', rec,room=request.sid)
+
+if __name__ == '__main__':
+    socketio.run(app, host=CFG['HOST'], port=CFG['PORT'])
 # http_server = WSGIServer(('0.0.0.0', 8080), app, handler_class=WebSocketServer) 
 # asyncio.get_event_loop().run_in_executor(None, http_server.serve_forever)
 # http_server.serve_forever()

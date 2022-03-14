@@ -71,11 +71,12 @@
             <div class="create" style="height: 60%; width: 50%">
 
                 <p id="Error" style="color: #ff0000;">Only .xlsx File Format Is Supported</p>
+                <p style="color: #ff0000;">While Adding Voter, The App Will Pause which means that No One can View a Webpage Until Its done</p>
                 <div class="name" style="display: flex; /* 2. display flex to the rescue */
                 flex-direction: row;">
                     <h5>File:</h5> <input type="file" name="file" id="file" style="margin-left: 20px; margin-top: 10px;"
                         required accept=".xlsx">
-                    <button type="button" class="btn btn-primary" onclick="oncliccck()">Create</button>
+                    <button type="button" class="btn btn-primary" onclick="SaveFile()">Create</button>
                 </div>
 
 
@@ -128,7 +129,8 @@ async function SaveFile()
 {
     let formData = new FormData();
     let photo = document.getElementById('file').files[0];      
-         
+    if (photo == null) return;
+    keepload();
     formData.append("file", photo);
     // formData.append("user", JSON.stringify(user)); 
     
@@ -147,11 +149,6 @@ async function SaveFile()
     }
     
 }
-        function oncliccck() {
-            // Main();
-            SaveFile();
-            keepload();
-        };
 
         socket.on('sleep', function(data){
             stopload()

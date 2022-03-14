@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="/static/bootstrap.min.css">
     <link rel="stylesheet" href="/static/inputs.css">
     <link rel="stylesheet" href="/static/votingform.css">
+    <link rel="stylesheet" href="/static/radio.css">
     <script src="/static/bootstrap.bundle.min.js"></script>
     <script src="/static/jquery.min.js"></script>
     <script src="/static/socket.js"></script>
@@ -130,7 +131,7 @@
     </div>
     <div id="myDiv">
         <center>
-            <div class="login" id="login" style="display: none;">
+            <div class="login" id="login" style="display: block;">
                 <div class="textt">
                     <h2>Login</h2>
                     <hr>
@@ -139,6 +140,7 @@
                 <div class="loogin">
                     <form id="login-form">
                         <p style="color: green;" id="Error"></p>
+                        <input type="reset" value="Reset" style="display: none;" id="login-reset">
                         <label for="adnumber">Addmisson Number : </label>
                         <input type="number" name="adnumber" id="adnumber" required style="width: 15%;"><br>
                         <div class="house" style="padding-top: 1%">
@@ -176,54 +178,69 @@
                 </div>
             </center>
         </div>
-        <div class="voting" style="display: block;">
-            <form id="regForm" method="get">
-
-                <h1>Vote!</h1><hr>
+        <div class="voting" style="display: none;" id="voting">
+            <form id="regForm">
+                <input type="reset" value="Reset" style="display: none;" id="form-reset">
+                <h1>Vote!</h1>
+                <hr>
 
                 <!-- One "tab" for each step in the form: -->
 
-                <div class="tab">School Captain: 
+                <!-- <div class="tab">School Captain:
                     <p style="color: red;" id="Error" class="error"></p>
                     <hr>
                     <center>
                         <div style="float: left;">
                             <p style="font-size: medium; margin-bottom: 0%;">Name:</p>
-                    <p style="font-size: medium; margin-bottom: 0%;">STD:</p>
-                    <p style="font-size: medium; margin-bottom: 0%;">House:</p>
+                            <p style="font-size: medium; margin-bottom: 0%;">STD:</p>
+                            <p style="font-size: medium; margin-bottom: 0%;">House:</p>
                         </div>
-                        <img src="/static/pics/3BlB68.jpeg" alt="bruh" style="text-align: center;" height="150px"><input type="radio" name="GG" id="Nothin" required value="2">  
+                        <img src="/static/pics/3BlB68.jpeg" alt="bruh" style="text-align: center;" height="150px">
+                        <div class="inprad">
+                            <label class="rad-label">
+                                <input type="radio" class="rad-input" name="rad">
+                                <div class="rad-design"></div>
+                                <div class="rad-text">Vote</div>
+                            </label>
+                        </div>
+
                     </center>
-                    
+
                     <hr>
                     <center>
                         <div style="float: left;">
                             <p style="font-size: medium; margin-bottom: 0%;">Name:</p>
-                    <p style="font-size: medium; margin-bottom: 0%;">STD:</p>
-                    <p style="font-size: medium; margin-bottom: 0%;">House:</p>
+                            <p style="font-size: medium; margin-bottom: 0%;">STD:</p>
+                            <p style="font-size: medium; margin-bottom: 0%;">House:</p>
                         </div>
-                        <img src="/static/pics/3BlB68.jpeg" alt="bruh" style="text-align: center;" height="150px"><input type="radio" name="GG" id="Nothin" required value="2">  
+                        <img src="/static/pics/3BlB68.jpeg" alt="bruh" style="text-align: center;" height="150px">
+                        <div class="inprad">
+                            <label class="rad-label">
+                                <input type="radio" class="rad-input" name="rad">
+                                <div class="rad-design"></div>
+                                <div class="rad-text">Vote</div>
+                            </label>
+                        </div>
+
                     </center>
-                
-                </div>
 
-                <div class="tab">Blah:
-                    <p style="color: red;" id="Error" class="error"></p>
-                    <p><input type="radio" name="GG" id="Nothin" required value="2"></p>
-                    <p><input type="radio" name="GG" id="Nothin" required value="4"></p>
-                </div>
+                    <hr>
 
+                </div> -->
+                <div class="tb-grp">
+
+                </div>
                 <div style="overflow:auto;">
                     <div style="float:right;">
-                        <button type="button" id="prevBtn" onclick="nextPrev(-1)" class="btn btn-primary">Previous</button>
+                        <button type="button" id="prevBtn" onclick="nextPrev(-1)"
+                            class="btn btn-primary">Previous</button>
                         <button type="button" id="nextBtn" onclick="nextPrev(1)" class="btn btn-primary">Next</button>
                     </div>
                 </div>
 
                 <!-- Circles which indicates the steps of the form: -->
-                <div style="text-align:center;margin-top:40px;">
-                    <span class="step"></span>
-                    <span class="step"></span>
+                <div style="text-align:center;margin-top:40px;" id="step-indi">
+                    <!-- <span class="step"></span> -->
                 </div>
 
             </form>
@@ -234,7 +251,10 @@
         var socket = io();
         var modal = new bootstrap.Modal(document.getElementById("staticBackdrop"));
         var errors = document.getElementById('Error');
-
+        var wcs_voter = [];
+        var voter_info = [];
+        var wcs_pos = {};
+        var data;
         function keepload() {
             document.getElementById("loader").style.display = "block";
             document.getElementById("myDiv").style.display = "none";
@@ -245,6 +265,56 @@
             document.getElementById("loader").style.display = "none";
             document.getElementById("myDiv").style.display = "block";
         }
+
+        function findCommonElements3(arr1, arr2) {
+            return arr1.some(item => arr2.includes(item))
+        }
+
+        function createposwithcad(data) {
+            for (let o = 0; o < data.pos.length; o++) {
+                var dataa = ``;
+                for (let q = 0; q < data.cad.length; q++) {
+                    if (data.cad[q][5] == data.pos[o][0]) {
+                        console.log(data.cad[q])
+                        dataa += `
+                        <center>
+                        <div style="float: left;">
+                            <p style="font-size: medium; margin-bottom: 0%;">Name: ${data.cad[q][1]}</p>
+                            <p style="font-size: medium; margin-bottom: 0%;">STD: ${data.cad[q][2]}</p>
+                            <p style="font-size: medium; margin-bottom: 0%;">House: ${data.cad[q][3]}</p>
+                            <p style="font-size: medium; margin-bottom: 0%;">Standing For: ${data.pos[o][1]}</p>
+                        </div>
+                        <img src="/static/pics/${data.cad[q][4]}" alt="bruh" style="text-align: center;" height="150px">
+                        <div class="inprad">
+                            <label class="rad-label">
+                                <input type="radio" class="rad-input" name="${data.pos[o][1]}" value="${data.cad[q][0]}">
+                                <div class="rad-design"></div>
+                                <div class="rad-text">Vote</div>
+                            </label>
+                        </div>
+
+                    </center>
+
+                    <hr>`;
+                    }
+                }
+                var ch = `<div class="tab">${data.pos[o][1]}:
+                    <p style="color: red;" id="Error" class="error"></p>
+                    <hr>
+                    ${dataa}
+                    </div>
+                    `
+                // console.log(ch)
+                $('.tb-grp').append(ch);
+                $('#step-indi').append('<span class="step"></span>');
+                showTab(currentTab);
+            }
+        }
+
+        socket.on('cad-with-pos', function (dataaa) {
+            console.log(dataaa);
+            data = dataaa;
+        });
         var modal_open = false;
         var fullcheck = setInterval(function () {
             if ((window.fullScreen) ||
@@ -299,6 +369,11 @@
                 errors.innerHTML = 'ERROR: Please Enter Correct Crdentials'
                 return;
             }
+            if (data.info[4] == 1) {
+                errors.innerHTML = 'ERROR: That User Is Already Voted'
+                return;
+            }
+            errors.innerHTML = '';
             var login = document.getElementById('login');
             var verify = document.getElementById('verify');
             login.style.display = 'none';
@@ -307,7 +382,7 @@
             var verify_adnum = document.getElementById('verify-adnumber');
             var verify_std = document.getElementById('verify-STD');
             var verify_house = document.getElementById('verify-House');
-
+            voter_info = data.info;
             verify_name.innerHTML = "Name: " + data.info[1];
             verify_adnum.innerHTML = "Addmisson Number: " + data.info[0];
             verify_std.innerHTML = "STD: " + data.info[2];
@@ -321,6 +396,9 @@
             login.style.display = 'block';
             verify.style.display = 'none';
             errors.innerHTML = "";
+            wcs_pos= {};
+            voter_info = [];
+            wcs_voter = [];
             $('#adnumber').val("");
         });
 
@@ -329,11 +407,45 @@
             var verify = document.getElementById('verify');
             login.style.display = 'none';
             verify.style.display = 'none';
+            var gg = { "EVERYONE": "00", "3": "01", "4": "02", "5": "03", "6": "04", "7": "05", "8": "06", "9": "07", "10": "08", "11": "09", "12": "10", "WINTER": "11", "SUMMER": "12", "SPRING": "13", "WINTER 3": "14", "WINTER 4": "15", "WINTER 5": "16", "WINTER 6": "17", "WINTER 7": "18", "WINTER 8": "19", "WINTER 9": "20", "WINTER 10": "21", "WINTER 11": "22", "WINTER 12": "23", "SUMMER 3": "24", "SUMMER 4": "25", "SUMMER 5": "26", "SUMMER 6": "27", "SUMMER 7": "28", "SUMMER 8": "29", "SUMMER 9": "30", "SUMMER 10": "31", "SUMMER 11": "32", "SUMMER 12": "33", "SPRING 3": "34", "SPRING 4": "35", "SPRING 5": "36", "SPRING 6": "37", "SPRING 7": "38", "SPRING 8": "39", "SPRING 9": "40", "SPRING 10": "41", "SPRING 11": "42", "SPRING 12": "43" };
+            wcs_voter.push("00")
+            wcs_voter.push(`${gg[voter_info[2]]}`)
+            wcs_voter.push(`${gg[voter_info[3]]}`)
+            wcs_voter.push(`${gg[`${voter_info[3]} ${voter_info[2]}`]}`)
+            console.log(wcs_voter)
+            for (let u = 0; u < data.pos.length; u++) {
+                const element = data.pos[u];
+                wcs_pos[element[1]] = element[2].match(/.{1,2}/g);
+            }
+            var vis_pos = {}
+            var the_heck = {};
+            var inofpos = 0;
+            var inofcad = 0;
+            the_heck['pos'] = [];
+            the_heck['cad'] = [];
+            for (let u = 0; u < data.pos.length; u++) {
+                const element = data.pos[u];
+                var dam = wcs_pos[element[1]];
+                if (findCommonElements3(wcs_voter, dam)) {
+                    // vis_pos[u] = element;
+                    the_heck['pos'][inofpos] = element;
+                    inofpos++;
+                    for (let i = 0; i < data.cad.length; i++) {
+                        const ea = data.cad[i];
+                        if (ea[5] == element[0]) {
+                            the_heck['cad'][inofcad] = ea;
+                            inofcad++;
+                        }
+                    }
+                }
+            }
+            // wcs_pos = data.pos[2].match(/.{1,2}/g);
+            console.log(the_heck)
+            createposwithcad(the_heck)
             $('.voting').css('display', 'block')
         });
 
-        var currentTab = 0; // Current tab is set to be the first tab (0)
-        showTab(currentTab); // Display the current tab
+        var currentTab = 0; // Current tab is set to be the first tab (0) // Display the current tab
 
         function showTab(n) {
             // This function will display the specified tab of the form ...
@@ -360,13 +472,29 @@
             // Exit the function if any field in the current tab is invalid:
             if (n == 1 && !validateForm()) return false;
             // Hide the current tab:
+            var a = x[currentTab].getElementsByClassName('error')[0];
+            a.innerHTML = "";
             x[currentTab].style.display = "none";
             // Increase or decrease the current tab by 1:
             currentTab = currentTab + n;
             // if you have reached the end of the form... :
             if (currentTab >= x.length) {
                 //...the form gets submitted:
-                document.getElementById("regForm").submit();
+                // document.getElementById("regForm").submit();
+                var login = document.getElementById('login');
+                var verify = document.getElementById('verify');
+                var voting = document.getElementById('voting');
+                voter_info = [];
+                wcs_voter = [];
+                wcs_pos = {};
+                login.style.display = 'block';
+                verify.style.display = 'none';
+                voting.style.display = 'none';
+                currentTab = 0;
+                showTab(currentTab);
+                fixStepIndicator(currentTab);
+                $('#form-reset').click();
+                $('#login-reset').click();
                 return false;
             }
             // Otherwise, display the correct tab:
@@ -386,16 +514,16 @@
                     y[i].className += " invalid";
                     // and set the current valid status to false:
                     valid = false;
-                    
+
                 }
 
                 if (y[i].type == "radio") {
-                        if (x[currentTab].querySelector("input[name='"+ y[i].name + "']:checked") == null) {
-                            var a = x[currentTab].getElementsByClassName('error')[0];
-                            a.innerHTML = "Please Select A Candidate"
-                            valid = false;
-                        }
+                    if (x[currentTab].querySelector("input[name='" + y[i].name + "']:checked") == null) {
+                        var a = x[currentTab].getElementsByClassName('error')[0];
+                        a.innerHTML = "Please Select A Candidate"
+                        valid = false;
                     }
+                }
             }
             // If the valid status is true, mark the step as finished and valid:
             if (valid) {
@@ -413,6 +541,9 @@
             //... and adds the "active" class to the current step:
             x[n].className += " active";
         }
+
+
+
     </script>
     <script src="/static/popper.min.js"></script>
 </body>

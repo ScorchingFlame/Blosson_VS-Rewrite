@@ -42,6 +42,10 @@
     float: right;
   }
 
+  .inprad {
+    float: right;
+  }
+
   /* Mark the active step: */
   .step.active {
     opacity: 1;
