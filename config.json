@@ -4,5 +4,6 @@
     "admin": {
         "USERNAME": "BlossomSchool@1234",
         "PASSWORD": "BPS@SHANTHI"
-    }
+    },
+    "debug": true
 }

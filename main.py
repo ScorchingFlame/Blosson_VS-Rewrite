@@ -1,7 +1,11 @@
+from threading import Thread
+from time import sleep
 from flask_compress import Compress
 from flask_socketio import SocketIO
 from flask_session import Session
-import flask, sqlite3, socket, asyncio, random, os, re, pandas as pd, tempfile, base64, re, json, sqlalchemy
+from io import StringIO
+from tempfile import NamedTemporaryFile
+import flask, sqlite3, socket, asyncio, random, os, re, pandas as pd, tempfile, base64, re, json, sqlalchemy, logging, xlrd, atexit
 from flask import abort, redirect, request, session, url_for
 from flask import Flask, render_template
 
@@ -13,10 +17,6 @@ def get_ip_address():
 
 def change_date_format(dt):
         return re.sub(r'(\d{4})-(\d{1,2})-(\d{1,2})', '\\3-\\2-\\1', dt)
-
-with open('config.json', 'r') as cfg:
-    CFG = json.loads(cfg.read())
-
 
 try:
     print(get_ip_address())
@@ -32,7 +32,7 @@ conn.execute("""CREATE TABLE IF NOT EXISTS positions (
 	            name TEXT NOT NULL,
 	            wcs TEXT NOT NULL
                 );""")
-conn.execute("""CREATE TABLE IF NOT EXISTS candidates (
+conn.execute("""CREATE TABLE IF NOT EXISTS candidates ( 
 	            id INTEGER PRIMARY KEY,
 	            name TEXT NOT NULL,
 	            STD TEXT NOT NULL,
@@ -48,10 +48,40 @@ conn.execute("""CREATE TABLE IF NOT EXISTS voters (
                 House TEXT NOT NULL,
                 Voted INTEGER NOT NULL
                 );""")
+with open('config.json', 'r') as cfg:
+    CFG = json.loads(cfg.read())
+    if CFG['debug'] == False:
+        app.logger.disabled = True
+        log = logging.getLogger('werkzeug')
+        log.disabled = True
+        os.environ['WERKZEUG_RUN_MAIN'] = 'true'
+    else:
+        log = StringIO()
+        logger = logging.getLogger('werkzeug')
+        stream = logging.StreamHandler(log)
+        os.environ['WERKZEUG_RUN_MAIN'] = 'true'
+        logger.addHandler(stream)
 
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
+
+class FileHandler():
+
+    def __init__(self):
+        self.file = NamedTemporaryFile(suffix='.xlsx', delete=False)
+        # register function called when quit
+        atexit.register(self._cleanup)
+
+    def write_into(self, btext):
+        self.file.write(btext)
+        self.file.seek(0)
+
+    def _cleanup(self):
+        # because self.file has been created without delete=False, closing the file causes its deletion 
+        self.file.close()
+        os.unlink(self.file.name)
+
 
 def decode_base64(data, altchars=b'+/'):
     """Decode base64, padding being optional.
@@ -157,20 +187,17 @@ def candidates():
     cursor = conn.cursor()
     cursor.execute(f"SELECT * from candidates")
     record = cursor.fetchall()
-    print(record)
     cursor.execute(f"SELECT * FROM positions")
     recordpos = cursor.fetchall()
     new_r = []
     for i in recordpos:
         for u,j in enumerate(record):
-            print(j, u)
             if i[0] == j[5]:
                 j = list(j)
                 j[5] = i[1]
                 # print(tuple(j), u)
                 new_r.append(tuple(j))
                 # record.pop(u)
-    print(new_r)
     return render_template('candidates.html', tm=new_r)
 
 @app.route('/admin/candidates/create', methods=['GET', 'POST'])
@@ -306,21 +333,34 @@ def vexcel():
 def uexcel():
     file = request.files['file'].read()
     try:
-        tf = tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False)
-        tf.write(file)
-                # print(tf.name)
-        df = pd.read_excel(tf.name, engine='openpyxl')
-        df['Voted'] = 0
-        df['adnumber'] = df['adnumber'].astype(int)
-        # print (df.dtypes)
-        df.to_sql('voters', con=conn, if_exists='append', index=False)
-        tf.close()
-        socketio.emit('sleep', {'done': 'ok'})
+        fh = FileHandler()
+        fh.write_into(file)
+        # print(fh.file.name)
+        # # sleep(60)
+        loc = (fh.file.name)
+        a : xlrd.Book = xlrd.open_workbook(loc)
+        sheet = a.sheet_by_index(0)
+        sheet.cell_value(0,0)
+
+        if not sheet.row_values(0) == ["AdmissionNumber", "Name", "STD", "House"]:
+            # socketio.emit('sleeep', {'done': 'ok'})
+            return abort(500)
+
+        # k = [int, str, int, Literal["WINTER", "SUMMER", "SPRING"]]
+        # sleep(60)
+        tp = []
+        for i in range(1, sheet.nrows-1):
+            meh = [x if type(x) == str else int(x) for x in sheet.row_values(i)]
+            meh.append(0)
+            tp.append(tuple(meh))
+
+        cur = conn.cursor()
+        cur.executemany("INSERT INTO voters VALUES (?, ?, ?, ?, ?)", tp)
+        conn.commit()
+        cur.close()
         return "Ok"
     except Exception as e:
-        print(e)
-        tf.close()
-        socketio.emit('sleeep', {'done': 'ok'})
+        # socketio.emit('sleeep', {'done': 'ok', 'error': e})
         return abort(500)
 
 @app.route('/admin/login', methods=['GET', 'POST'])
@@ -395,8 +435,52 @@ def on_connect():
             }
     socketio.emit('cad-with-pos', rec,room=request.sid)
 
+@socketio.on('voted')
+def voted(data):
+    try:
+        for x in data['voting_data']:
+            cursor = conn.cursor()
+            cursor.execute(f"UPDATE candidates SET Votes = Votes + 1 WHERE id = {data['voting_data'][x]}")
+            cursor.execute(f"UPDATE voters SET Voted = 1 WHERE adnumber = {data['voter_data'][0]}")
+            conn.commit()
+        print(data)    
+        socketio.emit('voted-complete', {'voted': True}, room=request.sid)
+        socketio.emit('live-feed-data', {"voter_data": data['voter_data']})
+    except Exception as e:
+        socketio.emit('voted-complete', {'voted': False, 'error': e}, room=request.sid)
+
+@app.route('/admin/live-feed')
+def live_feed():
+    if not session.get("login"):
+        return redirect("/admin/login")
+    return render_template('live-feed.html')
+
+@socketio.on('refresh')
+def refresh(data):
+    rec_cad = conn.cursor().execute('SELECT * FROM candidates').fetchall()
+    rec_pos = conn.cursor().execute('SELECT * FROM positions').fetchall()
+    new_rec = []
+    for i in rec_pos:
+        k = {}
+        k[i[1]] = sorted([e for e in rec_cad if e[5] == i[0]], key=lambda x:x[6], reverse=True)
+        new_rec.append(k)
+    # print(new_rec)
+    socketio.emit('income-refresh', new_rec, room=request.sid)
+
+@app.route('/admin/logout')
+def logout():
+    if not session.get("login"):
+        return redirect("/admin/login")
+    session.clear()
+    return redirect("/admin/login")
 if __name__ == '__main__':
     socketio.run(app, host=CFG['HOST'], port=CFG['PORT'])
+    # server = Thread(target=lambda:socketio.run(app, host=CFG['HOST'], port=CFG['PORT']))
+    # server.start()
+    # sleep(10)
+    # print(log.getvalue())
+    
+    # server.join(5)
 # http_server = WSGIServer(('0.0.0.0', 8080), app, handler_class=WebSocketServer) 
 # asyncio.get_event_loop().run_in_executor(None, http_server.serve_forever)
 # http_server.serve_forever()

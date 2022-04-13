@@ -287,7 +287,7 @@
                         <img src="/static/pics/${data.cad[q][4]}" alt="bruh" style="text-align: center;" height="150px">
                         <div class="inprad">
                             <label class="rad-label">
-                                <input type="radio" class="rad-input" name="${data.pos[o][1]}" value="${data.cad[q][0]}">
+                                <input type="radio" class="rad-input" name="${data.pos[o][0]}" value="${data.cad[q][0]}">
                                 <div class="rad-design"></div>
                                 <div class="rad-text">Vote</div>
                             </label>
@@ -390,13 +390,32 @@
 
         });
 
+        socket.on('voted-complete', function(data){
+            stopload();
+            if (data.voted) {
+                errors.innerHTML = `SUCCESS: ${voter_info[1]} Has Voted`;
+                setTimeout(function () {
+                    errors.innerHTML = "";
+                }, 5000)
+                voter_info = [];
+            }else{
+                console.log(data.error)
+                errors.innerHTML = `Failed: An error occurred while trying to register ${voter_info[1]}'s selected votes.`;
+                setTimeout(function () {
+                    errors.innerHTML = "";
+                }, 5000)
+                voter_info = [];
+            }
+            
+        })
+
         $('#verify-no').on('click', function () {
             var login = document.getElementById('login');
             var verify = document.getElementById('verify');
             login.style.display = 'block';
             verify.style.display = 'none';
             errors.innerHTML = "";
-            wcs_pos= {};
+            wcs_pos = {};
             voter_info = [];
             wcs_voter = [];
             $('#adnumber').val("");
@@ -484,7 +503,6 @@
                 var login = document.getElementById('login');
                 var verify = document.getElementById('verify');
                 var voting = document.getElementById('voting');
-                voter_info = [];
                 wcs_voter = [];
                 wcs_pos = {};
                 login.style.display = 'block';
@@ -493,7 +511,82 @@
                 currentTab = 0;
                 showTab(currentTab);
                 fixStepIndicator(currentTab);
-                $('#form-reset').click();
+                var data = $('#regForm').serializeArray().reduce(function (obj, item) {
+                    obj[item.name] = item.value;
+                    return obj;
+                }, {});
+                new_data = {
+                    voting_data: data,
+                    voter_data: voter_info
+                }
+                socket.emit('voted', new_data);
+                // console.log(data)
+                keepload();
+                $('#regForm').html(`<form id="regForm">
+                <input type="reset" value="Reset" style="display: none;" id="form-reset">
+                <h1>Vote!</h1>
+                <hr>
+
+                <!-- One "tab" for each step in the form: -->
+
+                <!-- <div class="tab">School Captain:
+                    <p style="color: red;" id="Error" class="error"></p>
+                    <hr>
+                    <center>
+                        <div style="float: left;">
+                            <p style="font-size: medium; margin-bottom: 0%;">Name:</p>
+                            <p style="font-size: medium; margin-bottom: 0%;">STD:</p>
+                            <p style="font-size: medium; margin-bottom: 0%;">House:</p>
+                        </div>
+                        <img src="/static/pics/3BlB68.jpeg" alt="bruh" style="text-align: center;" height="150px">
+                        <div class="inprad">
+                            <label class="rad-label">
+                                <input type="radio" class="rad-input" name="rad">
+                                <div class="rad-design"></div>
+                                <div class="rad-text">Vote</div>
+                            </label>
+                        </div>
+
+                    </center>
+
+                    <hr>
+                    <center>
+                        <div style="float: left;">
+                            <p style="font-size: medium; margin-bottom: 0%;">Name:</p>
+                            <p style="font-size: medium; margin-bottom: 0%;">STD:</p>
+                            <p style="font-size: medium; margin-bottom: 0%;">House:</p>
+                        </div>
+                        <img src="/static/pics/3BlB68.jpeg" alt="bruh" style="text-align: center;" height="150px">
+                        <div class="inprad">
+                            <label class="rad-label">
+                                <input type="radio" class="rad-input" name="rad">
+                                <div class="rad-design"></div>
+                                <div class="rad-text">Vote</div>
+                            </label>
+                        </div>
+
+                    </center>
+
+                    <hr>
+
+                </div> -->
+                <div class="tb-grp">
+
+                </div>
+                <div style="overflow:auto;">
+                    <div style="float:right;">
+                        <button type="button" id="prevBtn" onclick="nextPrev(-1)"
+                            class="btn btn-primary">Previous</button>
+                        <button type="button" id="nextBtn" onclick="nextPrev(1)" class="btn btn-primary">Next</button>
+                    </div>
+                </div>
+
+                <!-- Circles which indicates the steps of the form: -->
+                <div style="text-align:center;margin-top:40px;" id="step-indi">
+                    <!-- <span class="step"></span> -->
+                </div>
+
+            </form>`)
                 $('#login-reset').click();
                 return false;
             }

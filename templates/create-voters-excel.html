@@ -69,8 +69,8 @@
     <center>
         <form id="MyForm">
             <div class="create" style="height: 60%; width: 50%">
-
-                <p id="Error" style="color: #ff0000;">Only .xlsx File Format Is Supported</p>
+                <a href="{{ url_for('static', filename='MOCK_DATA.xlsx') }}"><button class="btn btn-primary" type="button">Example File</button></a>
+                <p id="Error" style="color: #ff0000;">Only .xlsx File Format Is Supported And Please Take a look at the Example File and Make Sure You Fill Out Coloum Name Same As in Example File</p>
                 <p style="color: #ff0000;">While Adding Voter, The App Will Pause which means that No One can View a Webpage Until Its done</p>
                 <div class="name" style="display: flex; /* 2. display flex to the rescue */
                 flex-direction: row;">
@@ -143,7 +143,11 @@ async function SaveFile()
        console.log('HTTP response code:',r.status); 
        if (r.status == 500){
          rr = document.getElementById('Error').innerHTML = "An Error occurred. Pls check The File Or File Format";
-       };
+          stopload()
+          console.log(r.text())
+        }else if (r.status == 200){
+          window.location.replace("/admin/voters");
+        }
     } catch(e) {
        console.log('Huston we have problem...:', e);
     }
@@ -158,6 +162,7 @@ async function SaveFile()
 
         socket.on('sleeep', function(data){
             stopload()
+            console.log(data);
             // window.location.replace("/admin/voters");
         });
     </script>

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/table.css">
+    <script src="/static/jquery.min.js"></script>
+    <script src="/static/bootstrap.bundle.min.js"></script>
+    <script src="/static/socket.js"></script>
+    <script src="/static/jsPdf.js"></script>
+    <title>Document</title>
+</head>
+
+<body>
+    <style type="text/css" media="print">
+        @page { 
+            size: landscape;
+        }
+    </style>
+    <div class="buttonss" style="padding-top: 10px">
+        <a href="/admin"><button type="button" class="btn btn-success">Back</button></a>
+        <button type="button" class="btn btn-primary" onclick="print()">Print</button>
+        <!-- <button class="btn btn-primary" onclick="_pdf()">Save as PDF</button> -->
+    </div>
+    <hr>
+    <center>
+        <div class="new-votes">
+            <h4>New Votes</h4>
+            <textarea name="new-votes" cols="100" rows="10" class="damnn" disabled style="resize:none;"></textarea>
+        </div>
+        <hr>
+        <div class="candidates">
+            <h4>Result</h4>
+            <button class="btn btn-primary" onclick="refresh_()">Refresh</button>
+            <p>* This Page Refreshes every 1 minute</p>
+        </div><hr>
+    </center>
+    <center>
+        <div class="pos-with-cad" style="padding-left: 10px; padding-right: 10px;">
+        </div>
+    </center>
+    
+    
+
+
+    <!-- <button onclick="llol()">Hii</button> -->
+    <!-- <script>
+    var socket = io();
+    
+    function llol() { 
+        socket.emit('llol', {data: 'hello'});
+       };
+  </script> -->
+    <script>
+        var socket = io();
+        socket.on('connect', function(data) {
+            socket.emit('refresh', { data: 'hello' });
+        });
+        socket.on('live-feed-data', function (data) {
+            console.log(data);
+            $('.damnn').val($('.damnn').val() + `[ * ] ${data["voter_data"][1]} Of Class ${data["voter_data"][2]} Just Voted\n`);
+            $('.damnn').scroll();
+        });
+        socket.on('income-refresh', function (data) {
+            $(".pos-with-cad").html("");
+            // console.log(data);
+            for (let q = 0; q < data.length; q++) {
+                const element = data[q];
+                var x = ``;
+                // console.log(element)
+                var brr = element[Object.keys(element)[0]];
+                for (var k of brr) {
+                    // console.log(k)
+                    x = x + `
+                    <tr>
+                        <th scope="row" data-title="Candidate Name">${k[1]}</th>
+                        <td data-title="STD">${k[2]}</td>
+                        <td data-title="House">${k[3]}</td>
+                        <td data-title="Photo"><img src="/static/pics/${k[4]}" height="100"></td>
+                        <td data-title="Votes">${k[6]}</td>
+                    </tr>
+                    `;
+                }
+                $(".pos-with-cad").append(`
+            <div class="pos">
+            <h5>${Object.keys(element)[0]}:</h5>
+            <table class="responsive-table">
+    
+                <thead>
+                    <tr>
+                        <th scope="col">Candidate Name</th>
+                        <th scope="col">STD</th>
+                        <th scope="col">House</th>
+                        <th scope="col">Photo</th>
+                        <th scope="col">Votes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${x}
+                </tbody>
+            </table>
+            <hr>
+        </div>
+                `)
+            }
+            
+        });
+        function refresh_() {
+            socket.emit('refresh', { data: 'hello' });
+        }
+        const arrayReverseObj = (obj) => {
+            let newArray = []
+
+            Object.keys(obj)
+                .sort()
+                .reverse()
+                .forEach(key => {
+                    newArray.push({
+                        'name': key,
+                        'chad': obj[key]
+                    })
+                })
+            return newArray
+        }
+
+        function _pdf() {
+            var doc = new jsPDF();
+            var specialElementHandlers = {
+                '#editor': function (element, renderer) {
+                    return true;
+                }
+            };
+                doc.fromHTML($('.pos-with-cad').html(), 15, 15, {
+                    'width': 170,
+                        'elementHandlers': specialElementHandlers
+                });
+                doc.save('results-file.pdf');
+        }
+        setInterval(function () { 
+            $('.damnn').val('').scroll();
+            refresh_();
+         }, 60000)
+    </script>
+    <script src="/static/popper.min.js"></script>
+</body>
+
+</html>
