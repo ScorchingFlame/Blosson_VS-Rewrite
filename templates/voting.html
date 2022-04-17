@@ -96,7 +96,13 @@
         #myDiv {
             height: 100%;
             width: 100%;
-            background-color: #bb3030;
+            background-image: url("/static/1.png");
+            /* background: no-repeat; */
+            /* opacity: 0.5; */
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+            /* background-color: #bb3030; */
         }
 
         .textt {
@@ -165,7 +171,7 @@
                         <hr>
                     </h3>
                 </div>
-                <div class="details">
+                <div class="details" style="color: black;">
                     <p>Is It You?</p>
                     <p id="verify-name">Name: </p>
                     <p id="verify-adnumber">Addmisson Number: </p>
@@ -635,7 +641,16 @@
             x[n].className += " active";
         }
 
-
+        $(document).ready(function() {
+            $(document).on("contextmenu",function(){
+            return false;
+            }); 
+            document.addEventListener("keydown", function (event) {
+            if (event.ctrlKey || event.metaKey) {
+                event.preventDefault();
+            }   
+        });
+        }); 
 
     </script>
     <script src="/static/popper.min.js"></script>

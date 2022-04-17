@@ -6,6 +6,7 @@ colorama
 Flask
 Flask-Compress
 Flask-SocketIO
+xlrd==1.2.0
 gevent
 gevent-websocket
 greenlet
@@ -14,6 +15,7 @@ Jinja2
 MarkupSafe
 numpy
 pandas
+openpyxl
 pycparser
 python-dateutil
 python-engineio

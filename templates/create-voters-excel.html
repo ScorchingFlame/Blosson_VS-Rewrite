@@ -69,7 +69,7 @@
     <center>
         <form id="MyForm">
             <div class="create" style="height: 60%; width: 50%">
-                <a href="{{ url_for('static', filename='MOCK_DATA.xlsx') }}"><button class="btn btn-primary" type="button">Example File</button></a>
+                <a href="{{ url_for('static', filename='sheet.xlsx') }}"><button class="btn btn-primary" type="button">Example File</button></a>
                 <p id="Error" style="color: #ff0000;">Only .xlsx File Format Is Supported And Please Take a look at the Example File and Make Sure You Fill Out Coloum Name Same As in Example File</p>
                 <p style="color: #ff0000;">While Adding Voter, The App Will Pause which means that No One can View a Webpage Until Its done</p>
                 <div class="name" style="display: flex; /* 2. display flex to the rescue */
@@ -82,7 +82,8 @@
 
             </div>
         </form>
-
+        <h4>Example:</h4>
+        <img src="/static/yeah.jpg" alt="yeah">
     </center>
 
 </div>
@@ -164,6 +165,9 @@ async function SaveFile()
             stopload()
             console.log(data);
             // window.location.replace("/admin/voters");
+        });
+        socket.on('excel-error', function (data){
+          console.log(data);
         });
     </script>
     <script src="{{ url_for('static', filename='popper.min.js') }}"></script>

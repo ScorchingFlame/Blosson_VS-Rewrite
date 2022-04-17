@@ -1,14 +1,28 @@
+import json
+from typing import Iterator
+username = input("Username: ")
+password = input("Password: ")
+
+with open("./config.json", "r") as f:
+    da = json.loads(f.read())
+    if username != da["admin"]["USERNAME"] or password != da["admin"]["PASSWORD"]:
+        exit()
+from ctypes import WinError
 from threading import Thread
 from time import sleep
 from flask_compress import Compress
 from flask_socketio import SocketIO
 from flask_session import Session
+from concurrent.futures import ThreadPoolExecutor
 from io import StringIO
 from tempfile import NamedTemporaryFile
-import flask, sqlite3, socket, asyncio, random, os, re, pandas as pd, tempfile, base64, re, json, sqlalchemy, logging, xlrd, atexit
+import flask, sqlite3, socket, random, os, re, base64, re, logging, xlrd, atexit, run
 from flask import abort, redirect, request, session, url_for
 from flask import Flask, render_template
+from openpyxl import load_workbook
 
+# Additional Imports For EXE                 
+from engineio.async_drivers import gevent
 
 def get_ip_address():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -18,14 +32,29 @@ def get_ip_address():
 def change_date_format(dt):
         return re.sub(r'(\d{4})-(\d{1,2})-(\d{1,2})', '\\3-\\2-\\1', dt)
 
+def clear():
+  
+    # for windows
+    if os.name == 'nt':
+        _ = os.system('cls')
+  
+    # for mac and linux(here, os.name is 'posix')
+    else:
+        _ = os.system('clear')
+  
+network = True
+ip = ""
 try:
-    print(get_ip_address())
+    ip = get_ip_address()
 except OSError:
-    print("No Network Found, Pls connect To A Network To Work For Other Devices, At This Time You cant access This App In Other Devices")
+    network = False
+    # print("No Network Found, Pls connect To A Network To Work For Other Devices, At This Time You cant access This App In Other Devices")
 app = Flask(__name__)
 socketio = SocketIO(app,)
 compress = Compress()
 compress.init_app(app)
+executor = ThreadPoolExecutor(2)
+# executer = Executor(app)
 conn = sqlite3.connect('data/voting.db', check_same_thread=False)
 conn.execute("""CREATE TABLE IF NOT EXISTS positions (
 	            id INTEGER PRIMARY KEY,
@@ -335,22 +364,22 @@ def uexcel():
     try:
         fh = FileHandler()
         fh.write_into(file)
-        # print(fh.file.name)
-        # # sleep(60)
+            # print(fh.file.name)
+            # sleep(60)
         loc = (fh.file.name)
-        a : xlrd.Book = xlrd.open_workbook(loc)
-        sheet = a.sheet_by_index(0)
-        sheet.cell_value(0,0)
-
-        if not sheet.row_values(0) == ["AdmissionNumber", "Name", "STD", "House"]:
-            # socketio.emit('sleeep', {'done': 'ok'})
+        a = load_workbook(loc)
+        sheet = a.worksheets[0]
+        # sheet.cell(0,0)
+        # print([x.value for x in list(sheet.rows)[0]])
+        if not [x.value for x in list(sheet.rows)[0]] == ["AdmissionNumber", "Name", "STD", "House"]:
+                # socketio.emit('sleeep', {'done': 'ok'})
             return abort(500)
 
-        # k = [int, str, int, Literal["WINTER", "SUMMER", "SPRING"]]
-        # sleep(60)
+            # k = [int, str, int, Literal["WINTER", "SUMMER", "SPRING"]]
+            # sleep(60)
         tp = []
-        for i in range(1, sheet.nrows-1):
-            meh = [x if type(x) == str else int(x) for x in sheet.row_values(i)]
+        for i in range(1, sheet.max_row-1):
+            meh = [x if type(x) == str else int(x) for x in [x.value for x in list(sheet.rows)[i]]]
             meh.append(0)
             tp.append(tuple(meh))
 
@@ -360,7 +389,8 @@ def uexcel():
         cur.close()
         return "Ok"
     except Exception as e:
-        # socketio.emit('sleeep', {'done': 'ok', 'error': e})
+        # print(e)
+        socketio.emit('excel-error', {'error': str(e)})
         return abort(500)
 
 @app.route('/admin/login', methods=['GET', 'POST'])
@@ -443,7 +473,7 @@ def voted(data):
             cursor.execute(f"UPDATE candidates SET Votes = Votes + 1 WHERE id = {data['voting_data'][x]}")
             cursor.execute(f"UPDATE voters SET Voted = 1 WHERE adnumber = {data['voter_data'][0]}")
             conn.commit()
-        print(data)    
+        # print(data)    
         socketio.emit('voted-complete', {'voted': True}, room=request.sid)
         socketio.emit('live-feed-data', {"voter_data": data['voter_data']})
     except Exception as e:
@@ -474,10 +504,29 @@ def logout():
     session.clear()
     return redirect("/admin/login")
 if __name__ == '__main__':
-    socketio.run(app, host=CFG['HOST'], port=CFG['PORT'])
+    # server = Thread(target=lambda:app.run(host=CFG['HOST'], port=CFG['PORT']))
+    # server.start()
+    # asyncio.get_event_loop().create_task()
+    # asyncio.get_event_loop().run_in_executor(None, lambda:run.run(network, ip, CFG['PORT'] ,CFG['admin']['USERNAME'], CFG['admin']['PASSWORD']))
+    # sleep(10)
+    try:
+        run.run(network, ip, CFG['PORT'] , CFG['admin']['USERNAME'], CFG['admin']['PASSWORD'])
+        socketio.run(app, host=CFG['HOST'], port=CFG['PORT'])
+    except KeyboardInterrupt:
+        pass
+    except OSError:
+        clear()
+        print(
+"""There is Another Voting System is running, So This Application Cant Be Run At the same Time
+Try These: 
+    * Try Closing The Other Voting System If There is no Voting System running except this, Try Restarting the System
+    * Changing PORT in config.json (Contact Ritheesh)"""
+)
+        input("Press Enter To Exit")
+    # asyncio.get_event_loop().run_in_executor(None, lambda:socketio.run(app, host=CFG['HOST'], port=CFG['PORT']))
     # server = Thread(target=lambda:socketio.run(app, host=CFG['HOST'], port=CFG['PORT']))
     # server.start()
-    # sleep(10)
+    
     # print(log.getvalue())
     
     # server.join(5)
