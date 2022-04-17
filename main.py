@@ -21,6 +21,7 @@ from flask import abort, redirect, request, session, url_for
 from flask import Flask, render_template
 from openpyxl import load_workbook
 
+
 # Additional Imports For EXE                 
 from engineio.async_drivers import gevent
 
@@ -50,7 +51,7 @@ except OSError:
     network = False
     # print("No Network Found, Pls connect To A Network To Work For Other Devices, At This Time You cant access This App In Other Devices")
 app = Flask(__name__)
-socketio = SocketIO(app,)
+socketio = SocketIO(app,async_mode='gevent')
 compress = Compress()
 compress.init_app(app)
 executor = ThreadPoolExecutor(2)
