@@ -124,10 +124,10 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="staticBackdropLabel">Press Ok Button</h5>
+                    <h5 class="modal-title" id="staticBackdropLabel">Press F11 Button</h5>
                 </div>
                 <div class="modal-body">
-                    Please click Ok Button To Continue Voting
+                    Please click F11 Button To Continue Voting
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-primary" onclick="toggleFullScreen()">Ok</button>
@@ -322,45 +322,9 @@
             data = dataaa;
         });
         var modal_open = false;
-        var fullcheck = setInterval(function () {
-            if ((window.fullScreen) ||
-                (window.innerWidth == screen.width && window.innerHeight == screen.height)) {
-                // do something
-            } else {
-                if (!modal_open) {
-                    modal.show();
-                    modal_open = true;
-                }
-                if (modal_open) {
-                    modal_open = false;
-                }
-            }
-        }, 1000);
-
         function toggleFullScreen() {
             modal.hide();
-            if (!document.fullscreenElement &&    // alternative standard method
-                !document.mozFullScreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {  // current working methods
-                if (document.documentElement.requestFullscreen) {
-                    document.documentElement.requestFullscreen();
-                } else if (document.documentElement.msRequestFullscreen) {
-                    document.documentElement.msRequestFullscreen();
-                } else if (document.documentElement.mozRequestFullScreen) {
-                    document.documentElement.mozRequestFullScreen();
-                } else if (document.documentElement.webkitRequestFullscreen) {
-                    document.documentElement.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
-                }
-            } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                } else if (document.msExitFullscreen) {
-                    document.msExitFullscreen();
-                } else if (document.mozCancelFullScreen) {
-                    document.mozCancelFullScreen();
-                } else if (document.webkitExitFullscreen) {
-                    document.webkitExitFullscreen();
-                }
-            }
+            
         }
 
         document.getElementById('login-form').onsubmit = function () {
@@ -645,6 +609,7 @@
             $(document).on("contextmenu",function(){
             return false;
             }); 
+            modal.show();
             document.addEventListener("keydown", function (event) {
             if (event.ctrlKey || event.metaKey) {
                 event.preventDefault();

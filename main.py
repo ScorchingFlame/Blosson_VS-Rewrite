@@ -43,6 +43,8 @@ def clear():
     else:
         _ = os.system('clear')
   
+if not os.path.exists("./static/pics"):
+    os.makedirs("./static/pics")
 network = True
 ip = ""
 try:
@@ -379,8 +381,8 @@ def uexcel():
             # k = [int, str, int, Literal["WINTER", "SUMMER", "SPRING"]]
             # sleep(60)
         tp = []
-        for i in range(1, sheet.max_row-1):
-            meh = [x if type(x) == str else int(x) for x in [x.value for x in list(sheet.rows)[i]]]
+        for i in range(2, sheet.max_row+1):
+            meh = [str(i) if x == 1 or x == 3 else int(i) for x, i in enumerate([x.value for x in list(sheet.rows)[i-1]])]
             meh.append(0)
             tp.append(tuple(meh))
 
@@ -478,7 +480,7 @@ def voted(data):
         socketio.emit('voted-complete', {'voted': True}, room=request.sid)
         socketio.emit('live-feed-data', {"voter_data": data['voter_data']})
     except Exception as e:
-        socketio.emit('voted-complete', {'voted': False, 'error': e}, room=request.sid)
+        socketio.emit('voted-complete', {'voted': False, 'error': str(e)}, room=request.sid)
 
 @app.route('/admin/live-feed')
 def live_feed():
