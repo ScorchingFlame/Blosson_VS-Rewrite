@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
+    <script src="{{ url_for('static', filename='bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='socket.js') }}"></script>
+    <title>Document</title>
+</head>
+
+<body>
+    <div class="buttonss" style="padding-top: 10px">
+        <a href="../voters"><button type="button" class="btn btn-success">Back</button></a>
+    </div>
+    <center>
+        <div class="create" style="height: 60%; width: 50%">
+
+            <form id="form" method="post" enctype="multipart/form-data">
+                <p id="Error" style="color: #ff0000;"></p>
+                <div class="name" style="display: flex; /* 2. display flex to the rescue */
+                flex-direction: row;">
+                    <h5>Addmisson Number:</h5> <input type="number" id="ad" name="ad" style="margin-left: 20px; margin-bottom: 10px;"  required> 
+                </div>
+                <div class="name" style="display: flex; /* 2. display flex to the rescue */
+                flex-direction: row;">
+                    <h5>Name:</h5> <input type="text" name="name" id="name" style="margin-left: 20px; margin-bottom: 10px;" required >(avoid Whitespace on the front of the text)
+                </div>
+                <div class="name" style="display: flex; /* 2. display flex to the rescue */
+                flex-direction: row;">
+                    <h5>Grade:</h5> <input type="number" id="std" name="std" style="margin-left: 20px; margin-bottom: 10px;"  required>
+                </div>
+                <div class="name" style="display: flex; /* 2. display flex to the rescue */
+                flex-direction: row;">
+                    <h5>House:</h5> <select name="house" id="house" style="margin-left: 20px; margin-bottom: 10px;" required>
+                        <option value="WINTER">WINTER</option>
+                        <option value="SUMMER">SUMMER</option>
+                        <option value="SPRING">SPRING</option>
+                    </select>
+                </div>
+                <div class="name" style="display: flex; /* 2. display flex to the rescue */
+                flex-direction: row;">
+                    <h5>Voted:</h5> <select name="voted" id="voted" style="margin-left: 20px; margin-bottom: 10px;" required>
+                        <option value="0" selected >NO</option>
+                        <option value="1">YES</option>
+                    </select>
+                </div>
+                <input type="submit" id="submit-button" class="btn btn-primary" value="Create">
+            </form>
+
+        </div>
+    </center>
+
+
+    <script>
+        $('form input').on('keypress', function(e) {
+    return e.which !== 13;
+});
+    </script>
+    <script src="{{ url_for('static', filename='popper.min.js') }}"></script>
+</body>
+
+</html>

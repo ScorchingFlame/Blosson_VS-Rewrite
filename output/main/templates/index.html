@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
+    <script src="{{ url_for('static', filename='bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='socket.js') }}"></script>
+    <title>Document</title>
+</head>
+<body>
+    <div class="buttonss" style="padding-top: 10px">
+      <a href="/admin/live-feed"><button type="button" class="btn btn-primary">Live Feed</button></a>
+        <a href="/admin/positions"><button type="button" class="btn btn-success">Positions</button></a>
+        <a href="/admin/candidates"><button type="button" class="btn btn-success">Candidates</button></a>
+        <a href="/admin/voters"><button type="button" class="btn btn-success">Voters</button></a>
+        <a href="/admin/logout"><button type="button" class="btn btn-danger">Logout</button></a>
+        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#clear-data-modal">Clear Data</button>
+        <div class="modal fade" id="clear-data-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+            <div class="modal-dialog" >
+              <div class="modal-content" style="width: 110%;">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="staticBackdropLabel">Clear Data</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  <p style="color: red;">Deleting Positions Also Deletes Candidates</p>
+                  <a href="/admin/cleardata/positions" class="btn btn-danger">Clear Positions</a>
+                  <a href="/admin/cleardata/candidates" class="btn btn-danger">Clear Candidates</a>
+                  <a href="/admin/cleardata/voters" class="btn btn-danger">Clear Voters</a>
+                  <a href="/admin/cleardata/all" class="btn btn-danger">Clear All</a>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+              </div>
+            </div>
+          </div>
+    </div>
+    
+    <!-- <button onclick="llol()">Hii</button> -->
+    <!-- <script>
+    var socket = io();
+    
+    function llol() { 
+        socket.emit('llol', {data: 'hello'});
+       };
+  </script> -->
+  <script src="{{ url_for('static', filename='popper.min.js') }}"></script>
+</body>
+</html>

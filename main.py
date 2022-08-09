@@ -16,10 +16,11 @@ from flask_session import Session
 from concurrent.futures import ThreadPoolExecutor
 from io import StringIO
 from tempfile import NamedTemporaryFile
-import flask, sqlite3, socket, random, os, re, base64, re, logging, xlrd, atexit, run
+import flask, sqlite3, socket, random, os, re, base64, re, logging, atexit, run
 from flask import abort, redirect, request, session, url_for
 from flask import Flask, render_template
 from openpyxl import load_workbook
+from openpyxl_image_loader import SheetImageLoader
 
 
 # Additional Imports For EXE                 
@@ -217,7 +218,7 @@ def candidates():
     if not session.get("login"):
         return redirect("/admin/login")
     cursor = conn.cursor()
-    cursor.execute(f"SELECT * from candidates")
+    cursor.execute(f"SELECT * from candidates ORDER BY name")
     record = cursor.fetchall()
     cursor.execute(f"SELECT * FROM positions")
     recordpos = cursor.fetchall()
@@ -461,7 +462,7 @@ def rifo(data):
 
 @socketio.on('connect')
 def on_connect():
-    rec_cad = conn.cursor().execute('SELECT * FROM candidates').fetchall()
+    rec_cad = conn.cursor().execute('SELECT * FROM candidates ORDER BY name').fetchall()
     rec_pos = conn.cursor().execute('SELECT * FROM positions').fetchall()
     rec = {'cad': rec_cad,
             'pos': rec_pos
@@ -471,12 +472,13 @@ def on_connect():
 @socketio.on('voted')
 def voted(data):
     try:
+        cursor = conn.cursor()
+        # print(data)
         for x in data['voting_data']:
-            cursor = conn.cursor()
             cursor.execute(f"UPDATE candidates SET Votes = Votes + 1 WHERE id = {data['voting_data'][x]}")
-            cursor.execute(f"UPDATE voters SET Voted = 1 WHERE adnumber = {data['voter_data'][0]}")
-            conn.commit()
-        # print(data)    
+        # print(data)
+        cursor.execute(f"UPDATE voters SET Voted = 1 WHERE adnumber = {data['voter_data'][0]} and House = '{data['voter_data'][3]}'")  
+        conn.commit()  
         socketio.emit('voted-complete', {'voted': True}, room=request.sid)
         socketio.emit('live-feed-data', {"voter_data": data['voter_data']})
     except Exception as e:
@@ -506,6 +508,46 @@ def logout():
         return redirect("/admin/login")
     session.clear()
     return redirect("/admin/login")
+
+@app.route('/admin/candidates/excel')
+def excel_cad():
+    if not session.get("login"):
+        return redirect("/admin/login")
+    return render_template("create-candidates-excel.html")
+
+@app.route('/upload/cexcel', methods=['POST'])
+def upload_cexcel():
+    file = request.files['file'].read()
+    try:
+        fh = FileHandler()
+        fh.write_into(file)
+            # print(fh.file.name)
+            # sleep(60)
+        loc = (fh.file.name)
+        wb = load_workbook(loc)
+        sheet = wb.worksheets[0]
+        image_loader = SheetImageLoader(sheet)
+        # Put your sheet in the loader
+        if not [x.value for x in list(sheet.rows)[0]] == ["Name", "STD", "House" ,"Position", "Image", "StartingVotes"]:
+            abort(500)
+        caddo = []
+        indeximage  =2
+        for i in range(2, sheet.max_row+1):
+            imagename = f"{''.join(random.choice('0123456789ABCDEFMJWksiwl') for i in range(9))}.jpeg"
+            image_loader.get(f"E{str(indeximage)}").save(f"./static/pics/{imagename}")
+            meh = [str(i) if x == 0 or x == 2 else (imagename if x == 4 else int(i)) for x, i in enumerate([x.value for x in list(sheet.rows)[i-1]])]
+            indeximage+=1
+            caddo.append(tuple(meh))
+
+        cur = conn.cursor()
+        cur.executemany("INSERT INTO candidates (name, STD, House, Position , Photo, Votes) VALUES (?, ?, ?, ?,?,?)", caddo)
+        conn.commit()
+        cur.close()
+        return "Ok"
+    except Exception as e:
+        # print(e)
+        socketio.emit('excel-c-error', {'error': str(e)})
+        return abort(500)
 if __name__ == '__main__':
     # server = Thread(target=lambda:app.run(host=CFG['HOST'], port=CFG['PORT']))
     # server.start()

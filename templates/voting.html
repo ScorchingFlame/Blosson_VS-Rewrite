@@ -23,6 +23,15 @@
             height: 100%;
             margin: 0;
         }
+        body{ 
+            background-image: url("/static/1.png");
+            /* background: no-repeat; */
+            /* opacity: 0.5; */
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-attachment: fixed;
+        }
 
         /* Center the loader */
         #loader {
@@ -96,12 +105,6 @@
         #myDiv {
             height: 100%;
             width: 100%;
-            background-image: url("/static/1.png");
-            /* background: no-repeat; */
-            /* opacity: 0.5; */
-            background-position: center;
-            background-repeat: no-repeat;
-            background-size: cover;
             /* background-color: #bb3030; */
         }
 
@@ -291,7 +294,7 @@
                             <p style="font-size: medium; margin-bottom: 0%;">Standing For: ${data.pos[o][1]}</p>
                         </div>
                         <img src="/static/pics/${data.cad[q][4]}" alt="bruh" style="text-align: center;" height="150px">
-                        <div class="inprad">
+                        <div class="inprad" onclick="window.scrollBy(0,999999999)">
                             <label class="rad-label">
                                 <input type="radio" class="rad-input" name="${data.pos[o][0]}" value="${data.cad[q][0]}">
                                 <div class="rad-design"></div>
@@ -364,17 +367,19 @@
             stopload();
             if (data.voted) {
                 errors.innerHTML = `SUCCESS: ${voter_info[1]} Has Voted`;
+                voter_info = [];
                 setTimeout(function () {
                     errors.innerHTML = "";
                 }, 5000)
-                voter_info = [];
+                
             }else{
                 console.log(data.error)
                 errors.innerHTML = `Failed: An error occurred while trying to register ${voter_info[1]}'s selected votes.`;
+                voter_info = [];
                 setTimeout(function () {
                     errors.innerHTML = "";
                 }, 5000)
-                voter_info = [];
+                
             }
             
         })
@@ -456,6 +461,7 @@
         }
 
         function nextPrev(n) {
+            window.scrollBy(0, -999999999)
             // This function will figure out which tab to display
             var x = document.getElementsByClassName("tab");
             // Exit the function if any field in the current tab is invalid:

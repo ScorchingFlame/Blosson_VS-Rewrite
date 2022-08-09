@@ -1,0 +1,2 @@
+starting user name: admin@BlossomSchool
+password: administrator@BlossomSchool

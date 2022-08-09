@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
+    <script src="{{ url_for('static', filename='bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='socket.js') }}"></script>
+    <title>Document</title>
+</head>
+
+<body>
+    <style>
+        /* Center the loader */
+        #loader {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            z-index: 1;
+            width: 120px;
+            height: 120px;
+            margin: -76px 0 0 -76px;
+            border: 16px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 16px solid #3498db;
+            -webkit-animation: spin 2s linear infinite;
+            animation: spin 2s linear infinite;
+        }
+
+        @-webkit-keyframes spin {
+            0% {
+                -webkit-transform: rotate(0deg);
+            }
+
+            100% {
+                -webkit-transform: rotate(360deg);
+            }
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Add animation to "page content" */
+        .animate-bottom {
+            position: relative;
+            -webkit-animation-name: animatebottom;
+            -webkit-animation-duration: 1s;
+            animation-name: animatebottom;
+            animation-duration: 1s
+        }
+
+        @-webkit-keyframes animatebottom {
+            from {
+                bottom: -100px;
+                opacity: 0
+            }
+
+            to {
+                bottom: 0px;
+                opacity: 1
+            }
+        }
+
+        @keyframes animatebottom {
+            from {
+                bottom: -100px;
+                opacity: 0
+            }
+
+            to {
+                bottom: 0;
+                opacity: 1
+            }
+        }
+    </style>
+    <div id="loader" style="display: none;"></div>
+    <div id="myDiv">
+
+
+        <div class="buttonss" style="padding-top: 10px">
+            <a href="../voters"><button type="button" class="btn btn-success">Back</button></a>
+        </div>
+        <center>
+            <form id="MyForm">
+                <div class="create" style="height: 60%; width: 50%">
+                    <a href="{{ url_for('static', filename='image.xlsx') }}"><button class="btn btn-primary"
+                            type="button">Example File</button></a>
+                    <p id="Error" style="color: #ff0000;">Only .xlsx File Format Is Supported And Please Take a look at
+                        the Example File and Make Sure You Fill Out Coloum Name Same As in Example File</p>
+                    <p style="color: #ff0000;">While Adding Candidates, The App Will Pause which means that No One can View a
+                        Webpage Until Its done</p>
+                    <div class="name" style="display: flex; /* 2. display flex to the rescue */
+                flex-direction: row;">
+                        <h5>File:</h5> <input type="file" name="file" id="file"
+                            style="margin-left: 20px; margin-top: 10px;" required accept=".xlsx">
+                        <button type="button" class="btn btn-primary" onclick="SaveFile()">Create</button>
+                    </div>
+
+
+                </div>
+            </form>
+            <h4>Example:</h4>
+            <img src="/static/smhhh.jpg" alt="yeah">
+        </center>
+
+    </div>
+    <script>
+        var socket = io();
+        function getBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => {
+                    let encoded = reader.result.toString().replace(/^data:(.*,)?/, '');
+                    if ((encoded.length % 4) > 0) {
+                        encoded += '='.repeat(4 - (encoded.length % 4));
+                    }
+                    resolve(encoded);
+                };
+                reader.onerror = error => reject(error);
+            });
+        }
+        const toBase64 = file => new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+        });
+
+        async function Main() {
+            const file = document.querySelector('#file').files[0];
+            socket.emit('excel_file', { dataURL: await toBase64(file) });
+            console.log(await toBase64(file))
+        }
+
+        function keepload() {
+            document.getElementById("loader").style.display = "block";
+            document.getElementById("myDiv").style.display = "none";
+        }
+
+
+        function stopload() {
+            document.getElementById("loader").style.display = "none";
+            document.getElementById("myDiv").style.display = "block";
+        }
+        async function SaveFile() {
+            let formData = new FormData();
+            let photo = document.getElementById('file').files[0];
+            if (photo == null) return;
+            keepload();
+            formData.append("file", photo);
+            // formData.append("user", JSON.stringify(user)); 
+
+            const ctrl = new AbortController()    // timeout
+            setTimeout(() => ctrl.abort(), 5000000);
+
+            try {
+                let r = await fetch('/upload/cexcel',
+                    { method: "POST", body: formData, signal: ctrl.signal });
+                console.log('HTTP response code:', r.status);
+                if (r.status == 500) {
+                    rr = document.getElementById('Error').innerHTML = "An Error occurred. Pls check The File Or File Format";
+                    stopload()
+                    console.log(r.text())
+                } else if (r.status == 200) {
+                    window.location.replace("/admin/candidates");
+                }
+            } catch (e) {
+                console.log('Huston we have problem...:', e);
+            }
+
+        }
+
+        socket.on('sleep', function (data) {
+            stopload()
+            window.location.replace("/admin/candidates");
+        });
+
+
+        socket.on('sleeep', function (data) {
+            stopload()
+            console.log(data);
+            // window.location.replace("/admin/voters");
+        });
+        socket.on('excel-c-error', function (data) {
+            console.log(data);
+        });
+    </script>
+    <script src="{{ url_for('static', filename='popper.min.js') }}"></script>
+</body>
+
+</html>
