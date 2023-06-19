@@ -60,6 +60,7 @@ compress.init_app(app)
 executor = ThreadPoolExecutor(2)
 # executer = Executor(app)
 conn = sqlite3.connect('data/voting.db', check_same_thread=False)
+voter_db = sqlite3.connect('data/voter.db', check_same_thread=False)
 conn.execute("""CREATE TABLE IF NOT EXISTS positions (
 	            id INTEGER PRIMARY KEY,
 	            name TEXT NOT NULL,
@@ -80,6 +81,10 @@ conn.execute("""CREATE TABLE IF NOT EXISTS voters (
                 STD TEXT NOT NULL,
                 House TEXT NOT NULL,
                 Voted INTEGER NOT NULL
+                );""")
+voter_db.execute("""CREATE TABLE IF NOT EXISTS votingtowho (
+                adnumber INTEGER NOT NULL,
+                candidates TEXT NOT NULL
                 );""")
 with open('config.json', 'r') as cfg:
     CFG = json.loads(cfg.read())
@@ -473,12 +478,16 @@ def on_connect():
 def voted(data):
     try:
         cursor = conn.cursor()
+        cursor_2 = voter_db.cursor()
         # print(data)
         for x in data['voting_data']:
             cursor.execute(f"UPDATE candidates SET Votes = Votes + 1 WHERE id = {data['voting_data'][x]}")
         # print(data)
-        cursor.execute(f"UPDATE voters SET Voted = 1 WHERE adnumber = {data['voter_data'][0]} and House = '{data['voter_data'][3]}'")  
-        conn.commit()  
+        cursor.execute(f"UPDATE voters SET Voted = 1 WHERE adnumber = {data['voter_data'][0]} and House = '{data['voter_data'][3]}'") 
+        akul = json.dumps(data['voting_data']) 
+        cursor_2.execute(f"INSERT INTO votingtowho (adnumber, candidates) VALUES ({data['voter_data'][0]}, '{akul}')")
+        conn.commit()
+        voter_db.commit()
         socketio.emit('voted-complete', {'voted': True}, room=request.sid)
         socketio.emit('live-feed-data', {"voter_data": data['voter_data']})
     except Exception as e:

@@ -293,7 +293,7 @@
                             <p style="font-size: medium; margin-bottom: 0%;">House: ${data.cad[q][3]}</p>
                             <p style="font-size: medium; margin-bottom: 0%;">Standing For: ${data.pos[o][1]}</p>
                         </div>
-                        <img src="/static/pics/${data.cad[q][4]}" alt="bruh" style="text-align: center;" height="150px">
+                        <img src="/static/pics/${data.cad[q][4]}" onclick="welp(this)" alt="bruh" style="text-align: center;" height="150px" data-value="${data.cad[q][0]}">
                         <div class="inprad" onclick="window.scrollBy(0,999999999)">
                             <label class="rad-label">
                                 <input type="radio" class="rad-input" name="${data.pos[o][0]}" value="${data.cad[q][0]}">
@@ -623,6 +623,9 @@
         });
         }); 
 
+        function welp(id) {
+            $(`input:radio[value="${id.getAttribute('data-value')}"]`).attr("checked", true).click();
+          }
     </script>
     <script src="/static/popper.min.js"></script>
 </body>
